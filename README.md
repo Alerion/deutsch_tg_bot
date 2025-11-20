@@ -2,7 +2,7 @@ Run with:
 
     uv sync
     . .venv/bin/activate
-    python -m main
+    python -m main start_bot
 
 Install pre-commit hooks:
 
