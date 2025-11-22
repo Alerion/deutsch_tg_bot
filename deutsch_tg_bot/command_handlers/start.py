@@ -25,7 +25,7 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     reset_user_session(update.message.from_user)
 
     await update.message.reply_text(
-        "Hi! I'm your Deutsch learning bot. Please choose your current Deutsch level:",
+        "Привіт! Я твій бот для вивчення німецької мови. Будь ласка, обери свій поточний рівень німецької:",
         reply_markup=_get_level_keyboard(),
     )
 
@@ -40,14 +40,14 @@ async def store_level(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         user_session.level = DeutschLevel(update.message.text)
     except ValueError:
         await update.message.reply_text(
-            "Invalid level selected. Please choose a valid Deutsch level from the keyboard.",
+            "Обрано невірний рівень. Будь ласка, обери правильний рівень німецької з клавіатури.",
             reply_markup=_get_level_keyboard(),
         )
         return STORE_LEVEL
 
     await update.message.reply_text(
-        f"Great! Your Deutsch level is set to {user_session.level.value}.\n"
-        "Type /next to get your first exercise.",
+        f"Чудово! Твій рівень німецької встановлено на {user_session.level.value}.\n"
+        "Введи /next, щоб отримати перше завдання.",
         reply_markup=ReplyKeyboardRemove(),
     )
     return NEW_EXERCISE
@@ -64,10 +64,10 @@ async def check_answer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     correct_answer = "I am reading a book."
 
     if user_answer.strip().lower() == correct_answer.strip().lower():
-        await update.message.reply_text("Correct! 🎉\nDo you have some questions?")
+        await update.message.reply_text("Правильно! 🎉\nУ тебе є якісь питання?")
     else:
         await update.message.reply_text(
-            f"Incorrect. The correct answer is: {correct_answer}.\nDo you have some questions?"
+            f"Неправильно. Правильна відповідь: {correct_answer}.\nУ тебе є якісь питання?"
         )
 
     return ANSWER_QUESTION
@@ -76,13 +76,13 @@ async def check_answer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 async def answer_questions(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_question = update.message.text
     await update.message.reply_text(
-        f"You asked: {user_question}\n(Answering questions is not implemented yet.)"
+        f"Ти запитав: {user_question}\n(Відповіді на питання ще не реалізовані.)"
     )
     return ANSWER_QUESTION
 
 
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text("Goodbye! To start again, type /start.")
+    await update.message.reply_text("До побачення! Щоб почати знову, введіть /start.")
     return END
 
 
@@ -117,5 +117,5 @@ def _get_level_keyboard() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         buttons,
         one_time_keyboard=True,
-        input_field_placeholder="Your Deutsch level",
+        input_field_placeholder="Твій рівень німецької",
     )
