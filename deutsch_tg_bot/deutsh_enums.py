@@ -14,4 +14,42 @@ class DeutschTense(str, Enum):
     PRÄSENS = "Präsens"
     PERFEKT = "Perfekt"
     PRÄTERITUM = "Präteritum"
+    PRÄSENS_FUTURE = "Präsens Futur"
     FUTUR1 = "Futur I"
+    FUTUR2 = "Futur II"
+    PLUSQUAMPERFEKT = "Plusquamperfekt"
+
+
+DEUTCH_LEVEL_TENSES = {
+    DeutschLevel.A1: [DeutschTense.PRÄSENS],
+    DeutschLevel.A2: [DeutschTense.PRÄSENS, DeutschTense.PERFEKT],
+    DeutschLevel.B1: [
+        DeutschTense.PRÄSENS,
+        DeutschTense.PERFEKT,
+        DeutschTense.PRÄTERITUM,
+    ],
+    DeutschLevel.B2: [
+        DeutschTense.PRÄSENS,
+        DeutschTense.PERFEKT,
+        DeutschTense.PRÄTERITUM,
+        DeutschTense.PRÄSENS_FUTURE,
+        DeutschTense.PLUSQUAMPERFEKT,
+    ],
+    DeutschLevel.C1: [
+        DeutschTense.PRÄSENS,
+        DeutschTense.PERFEKT,
+        DeutschTense.PRÄTERITUM,
+        DeutschTense.PRÄSENS_FUTURE,
+        DeutschTense.PLUSQUAMPERFEKT,
+        DeutschTense.FUTUR1,
+    ],
+    DeutschLevel.C2: [
+        DeutschTense.PRÄSENS,
+        DeutschTense.PERFEKT,
+        DeutschTense.PRÄTERITUM,
+        DeutschTense.PRÄSENS_FUTURE,
+        DeutschTense.PLUSQUAMPERFEKT,
+        DeutschTense.FUTUR1,
+        DeutschTense.FUTUR2,
+    ],
+}
