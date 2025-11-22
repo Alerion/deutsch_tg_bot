@@ -45,7 +45,11 @@ async def store_level(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         )
         return STORE_LEVEL
 
-    rprint(f"Level of {user.first_name}: {user_session.level}")
+    await update.message.reply_text(
+        f"Great! Your Deutsch level is set to {user_session.level.value}.\n"
+        "Type /next to get your first exercise.",
+        reply_markup=ReplyKeyboardRemove(),
+    )
     return NEW_EXERCISE
 
 
@@ -78,17 +82,20 @@ async def answer_questions(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
 
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text("Okay, bye.")
-    await END
+    await update.message.reply_text("Goodbye! To start again, type /start.")
+    return END
 
 
 excercises_handler = ConversationHandler(
-    entry_points=[MessageHandler(filters.TEXT & ~filters.COMMAND, new_exercise)],
+    entry_points=[CommandHandler("next", new_exercise)],
     states={
         CHECK_ANSWER: [MessageHandler(filters.TEXT & ~filters.COMMAND, check_answer)],
         ANSWER_QUESTION: [MessageHandler(filters.TEXT & ~filters.COMMAND, answer_questions)],
     },
-    fallbacks=[CommandHandler("next", new_exercise)],
+    fallbacks=[
+        CommandHandler("stop", stop),
+        CommandHandler("next", new_exercise),
+    ],
     map_to_parent={END: END},
 )
 
