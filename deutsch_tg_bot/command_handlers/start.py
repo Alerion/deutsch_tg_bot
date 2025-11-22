@@ -1,3 +1,5 @@
+from typing import cast
+
 from rich import print as rprint
 from telegram import ForceReply, ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import (
@@ -11,7 +13,7 @@ from telegram.ext import (
 )
 
 from deutsch_tg_bot.deutsh_enums import DeutschLevel
-from deutsch_tg_bot.user_session import get_user_session, reset_user_session
+from deutsch_tg_bot.user_session import UserSession
 
 STORE_LEVEL = 1
 NEW_EXERCISE = 2
@@ -22,7 +24,7 @@ END = ConversationHandler.END
 
 
 async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    reset_user_session(update.message.from_user)
+    context.user_data["session"] = UserSession()
 
     await update.message.reply_text(
         "Привіт! Я твій бот для вивчення німецької мови. Будь ласка, обери свій поточний рівень німецької:",
@@ -34,7 +36,7 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
 async def store_level(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user = update.message.from_user
-    user_session = get_user_session(user)
+    user_session = cast(UserSession, context.user_data["session"])
 
     try:
         user_session.level = DeutschLevel(update.message.text)
@@ -54,7 +56,8 @@ async def store_level(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
 
 async def new_exercise(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    rprint("Generating new exercise...")
+    user_session = cast(UserSession, context.user_data["session"])
+    rprint(f"Generating new exercise for level {user_session.level}...")
     await update.message.reply_text("Я читаю книгу.", parse_mode="Markdown")
     return CHECK_ANSWER
 
