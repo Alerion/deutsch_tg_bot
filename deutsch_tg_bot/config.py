@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     TELEGRAM_BOT_TOKEN: str = ""
     ANTHROPIC_API_KEY: str = ""
     # https://docs.anthropic.com/en/docs/about-claude/models/overview#model-names
-    ANTHROPIC_MODEL: str = "claude-sonnet-4-5"
+    ANTHROPIC_MODEL: str = "claude-haiku-4-5"
 
 
 settings = Settings()

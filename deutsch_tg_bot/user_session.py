@@ -4,14 +4,13 @@ from deutsch_tg_bot.deutsh_enums import DeutschLevel, DeutschTense
 
 
 @dataclass
-class CurrentSentence:
+class Sentence:
     sentence: str
     tense: DeutschTense
 
 
 @dataclass
 class UserSession:
-    current_sentence: CurrentSentence | None = None
-    conversation_history: list[CurrentSentence] = field(default_factory=list)
+    conversation_history: list[Sentence] = field(default_factory=list)
     level: DeutschLevel | None = None
-    rules: str | None = None
+    constraint: str | None = None

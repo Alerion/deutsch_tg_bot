@@ -10,6 +10,7 @@ from telegram.ext import (
     filters,
 )
 
+from deutsch_tg_bot.ai.sentence_generator import generate_sentence
 from deutsch_tg_bot.command_handlers.stop import stop_command
 from deutsch_tg_bot.user_session import UserSession
 
@@ -22,7 +23,13 @@ END = ConversationHandler.END
 async def new_exercise(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_session = cast(UserSession, context.user_data["session"])
     rprint(f"Generating new exercise for level {user_session.level}...")
-    await update.message.reply_text("Я читаю книгу.", parse_mode="Markdown")
+    new_sentence = generate_sentence(
+        level=user_session.level,
+        previous_sentences=user_session.conversation_history,
+        optional_constraint=user_session.constraint,
+    )
+    user_session.conversation_history.append(new_sentence)
+    await update.message.reply_text(new_sentence.sentence, parse_mode="Markdown")
     return CHECK_ANSWER
 
 

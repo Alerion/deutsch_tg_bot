@@ -58,9 +58,9 @@ async def store_rules(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     message_text = update.message.text.strip() if update.message else ""
 
     if message_text and message_text != "/skip":
-        user_session.rules = update.message.text.strip()
+        user_session.constraint = update.message.text.strip()
         await update.message.reply_text(
-            f"Правила збережено: {user_session.rules}\nВведи /next, щоб отримати перше завдання."
+            f"Правила збережено: {user_session.constraint}\nВведи /next, щоб отримати перше завдання."
         )
     else:
         await update.message.reply_text("Введи /next, щоб отримати перше завдання.")
