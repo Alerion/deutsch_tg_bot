@@ -1,9 +1,9 @@
 import anthropic
 from rich import print as rprint
-from telegram import ForceReply, Update
-from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
+from telegram import Update
+from telegram.ext import Application
 
-from deutsch_tg_bot.command_handlers.start import training_handler
+from deutsch_tg_bot.command_handlers.training import training_handler
 from deutsch_tg_bot.config import settings
 
 anthropic_client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
