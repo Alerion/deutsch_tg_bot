@@ -23,7 +23,10 @@ def generate_sentence(
         model=settings.ANTHROPIC_MODEL,
         max_tokens=1000,
         temperature=1.0,
-        messages=[{"role": "user", "content": prompt}],
+        messages=[
+            {"role": "user", "content": prompt},
+            {"role": "assistant", "content": "<sentence_planning>"},
+        ],
     )
     completion = response.content[0].text.strip()
     # Parse <ukrainian_sentence> to extract the sentence
@@ -109,7 +112,8 @@ Adjust the complexity of your sentence based on the specified German proficiency
 **B1/B2 (Intermediate):**
 - Include more complex situations and abstract concepts
 - Use varied sentence constructions and a wider vocabulary range
-- Use compound sentences and subordinate clauses
+- You may use compound sentences
+- **IMPORTANT: Use a maximum of 1 subordinate clause in addition to the main clause**
 
 **C1/C2 (Advanced):**
 - Use sophisticated vocabulary and complex grammatical structures

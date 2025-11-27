@@ -13,4 +13,4 @@ class Sentence:
 class UserSession:
     conversation_history: list[Sentence] = field(default_factory=list)
     level: DeutschLevel | None = None
-    constraint: str | None = None
+    sentence_constraint: str | None = None

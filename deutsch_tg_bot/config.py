@@ -13,5 +13,7 @@ class Settings(BaseSettings):
     # https://docs.anthropic.com/en/docs/about-claude/models/overview#model-names
     ANTHROPIC_MODEL: str = "claude-haiku-4-5"
 
+    PREVIOUS_SENTENCES_NUMBER: int = 10
+
 
 settings = Settings()

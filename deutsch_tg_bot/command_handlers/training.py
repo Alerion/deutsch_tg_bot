@@ -15,7 +15,7 @@ from deutsch_tg_bot.deutsh_enums import DeutschLevel
 from deutsch_tg_bot.user_session import UserSession
 
 STORE_LEVEL = 1
-STORE_RULES = 2
+STORE_SENTENCE_CONSTRAINT = 2
 NEW_EXERCISE = 3
 # Shortcut for ConversationHandler.END
 END = ConversationHandler.END
@@ -50,17 +50,18 @@ async def store_level(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         "Якщо так, введи правила. Якщо ні, просто введи /skip.",
         reply_markup=ReplyKeyboardRemove(),
     )
-    return STORE_RULES
+    return STORE_SENTENCE_CONSTRAINT
 
 
-async def store_rules(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def store_sentence_constraint(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_session = cast(UserSession, context.user_data["session"])
     message_text = update.message.text.strip() if update.message else ""
 
     if message_text and message_text != "/skip":
-        user_session.constraint = update.message.text.strip()
+        user_session.sentence_constraint = update.message.text.strip()
         await update.message.reply_text(
-            f"Правила збережено: {user_session.constraint}\nВведи /next, щоб отримати перше завдання."
+            f"Правила збережено: {user_session.sentence_constraint}\n"
+            "Введи /next, щоб отримати перше завдання."
         )
     else:
         await update.message.reply_text("Введи /next, щоб отримати перше завдання.")
@@ -72,9 +73,9 @@ training_handler = ConversationHandler(
     entry_points=[CommandHandler("start", start_handler)],
     states={
         STORE_LEVEL: [MessageHandler(filters.TEXT & ~filters.COMMAND, store_level)],
-        STORE_RULES: [
-            CommandHandler("skip", store_rules),
-            MessageHandler(filters.TEXT & ~filters.COMMAND, store_rules),
+        STORE_SENTENCE_CONSTRAINT: [
+            CommandHandler("skip", store_sentence_constraint),
+            MessageHandler(filters.TEXT & ~filters.COMMAND, store_sentence_constraint),
         ],
         NEW_EXERCISE: [excercise_handler],
     },
