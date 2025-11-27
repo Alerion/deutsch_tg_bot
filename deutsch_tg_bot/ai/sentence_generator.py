@@ -1,41 +1,44 @@
 import random
 
 import anthropic
+from rich import print as rprint
 
+from deutsch_tg_bot.ai.anthropic_utils import extract_tag_content, replace_promt_placeholder
 from deutsch_tg_bot.config import settings
 from deutsch_tg_bot.deutsh_enums import DEUTCH_LEVEL_TENSES, DeutschLevel, DeutschTense
 from deutsch_tg_bot.user_session import Sentence
 
-client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+anthropic_client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
 
 
 def generate_sentence(
     level: DeutschLevel, previous_sentences: list[Sentence], optional_constraint: str | None
 ) -> Sentence:
     tense = get_random_tense_for_level(level)
-    prompt = build_prompt(
+    prompt = build_sentence_generator_prompt(
         level=level,
         tense=tense,
         previous_sentences=previous_sentences,
         optional_constraint=optional_constraint,
     )
-    response = client.messages.create(
+    response = anthropic_client.messages.create(
         model=settings.ANTHROPIC_MODEL,
-        max_tokens=1000,
+        max_tokens=3000,
         temperature=1.0,
         messages=[
             {"role": "user", "content": prompt},
             {"role": "assistant", "content": "<sentence_planning>"},
         ],
     )
+    rprint("--- AI generated sentence ---")
+    rprint(response.content[0].text)
     completion = response.content[0].text.strip()
-    # Parse <ukrainian_sentence> to extract the sentence
-    start_tag = "<ukrainian_sentence>"
-    end_tag = "</ukrainian_sentence>"
-    start_index = completion.find(start_tag) + len(start_tag)
-    end_index = completion.find(end_tag)
-    ukrainian_sentence = completion[start_index:end_index].strip()
-    return Sentence(sentence=ukrainian_sentence, tense=tense)
+    ukrainian_sentence = extract_tag_content(completion, "ukrainian_sentence")
+    return Sentence(
+        sentence=ukrainian_sentence,
+        tense=tense,
+        level=level,
+    )
 
 
 def get_random_tense_for_level(level: DeutschLevel) -> DeutschTense:
@@ -43,63 +46,74 @@ def get_random_tense_for_level(level: DeutschLevel) -> DeutschTense:
     return random.choice(tenses)
 
 
-def build_prompt(
+def build_sentence_generator_prompt(
     level: DeutschLevel,
     tense: DeutschTense,
     previous_sentences: list[Sentence],
     optional_constraint: str | None,
 ) -> str:
     previous_sentences = [s.sentence for s in previous_sentences]
-    prompt = f"""
+    params = {
+        "previous_sentences": "\n".join(previous_sentences),
+        "level": level.value,
+        "tense": tense.value,
+        "optional_constraint": optional_constraint or "",
+    }
+    rprint("--- AI params to generate sentence ---")
+    rprint(params)
+    prompt = replace_promt_placeholder("""
 You are generating Ukrainian sentences for a Telegram bot that teaches German to Ukrainian speakers.
-Your task is to create exactly ONE Ukrainian sentence that users will translate into German.
+Your task is to create exactly ONE Ukrainian sentence that users will translate into German as a language learning exercise.
+
+Here are the sentences you have previously generated. Your new sentence must be completely different from all of these:
+
+<previous_sentences>
+{{previous_sentences}}
+</previous_sentences>
 
 Here is the German proficiency level for this sentence:
 
 <level>
-{level.value}
+{{level}}
 </level>
 
 Here is the target German tense that the translation should naturally use:
 
 <tense>
-{tense.value}
+{{tense}}
 </tense>
 
-Here is an optional constraint (this may be empty, or it may contain a specific German word, phrase,
-or grammatical structure that should naturally appear in the German translation):
+Here is an optional constraint that may contain a specific German word, phrase,
+or grammatical structure that should naturally appear in the German translation. This field may be empty:
 
 <optional_constraint>
-{optional_constraint or ""}
+{{optional_constraint}}
 </optional_constraint>
-
-Here are the sentences you have previously generated.
-Your new sentence must be completely different from all of these in terms of topic,
-vocabulary, grammatical structure, and sentence type:
-
-<previous_sentences>
-{"\n".join(previous_sentences)}
-</previous_sentences>
 
 # Your Task
 
-Generate a Ukrainian sentence that meets all the requirements below.
-Before providing your final sentence, wrap your systematic planning inside
-<sentence_planning> tags to ensure all requirements are met.
+Generate a Ukrainian sentence that meets all the requirements specified below.
+Before providing your final sentence, work through your planning systematically
+inside <sentence_planning> tags to ensure all requirements are met.
 
-## Requirements
+# Requirements
 
-### 1. Diversity Requirement
+## 1. Diversity Requirement
 
-Your new sentence must differ from ALL previous sentences in:
+Your new sentence must differ from ALL previous sentences in these ways:
+
 - **Topic/subject matter**: Choose from diverse domains such as daily life, work,
-  hobbies, travel, family, food, weather, education, health, technology, culture,
-  politics, environment, sports, entertainment, etc.
-- **Vocabulary**: Use different words than those in previous sentences
-- **Grammatical structures**: Use different sentence patterns and constructions
-- **Sentence type**: Vary between statements, questions, and commands
+  hobbies, travel, family, food, weather, education, health, technology, culture, politics,
+  environment, sports, entertainment, etc. Avoid topics that have already been covered.
 
-### 2. Proficiency Level Requirement
+- **Vocabulary**: Use different words than those appearing in previous sentences.
+
+- **Grammatical structures**: Use different sentence patterns and constructions than those in previous sentences.
+
+- **Sentence type**: Vary between statements, questions, and commands.
+  Choose a type that provides good variety from the previous sentences.
+
+## 2. Proficiency Level Requirement
 
 Adjust the complexity of your sentence based on the specified German proficiency level:
 
@@ -121,9 +135,10 @@ Adjust the complexity of your sentence based on the specified German proficiency
 - Use idiomatic expressions and advanced discourse elements
 - Include multiple subordinate clauses, passive constructions, subjunctive mood, and stylistically refined language
 
-### 3. German Tense Requirement
+## 3. German Tense Requirement
 
-Construct your Ukrainian sentence so that the most natural German translation uses the specified tense:
+Construct your Ukrainian sentence so that the most natural German translation uses the specified tense.
+Here's how to think about each tense:
 
 - **Präsens**: Current states, habits, general facts, or ongoing actions
 - **Präsens Futur**: Future meanings expressed using present tense (scheduled events, immediate future)
@@ -133,90 +148,98 @@ Construct your Ukrainian sentence so that the most natural German translation us
 - **Futur II**: Future perfect tense using "werden + past participle + haben/sein"
 - **Plusquamperfekt**: Past perfect tense expressing actions completed before another past action
 
-### 4. Optional Constraint Requirement
+## 4. Optional Constraint Requirement
 
-If the `<optional_constraint>` contains a value, construct your Ukrainian sentence so that when translated into German,
+If the `<optional_constraint>` field contains a value, construct your Ukrainian sentence so that when translated into German,
 the translation will naturally incorporate the specified German word, phrase, or grammatical structure.
 
-## Planning Process
+If the `<optional_constraint>` field is empty, you may ignore this requirement.
 
-In your `<sentence_planning>` section, work through each of these steps systematically:
+# Planning Process
+
+Work through each of these steps systematically in your `<sentence_planning>` section:
 
 **Step 1: Analyze Previous Sentences**
-- List or quote each previous sentence
-- Identify what topics have been covered (list specific examples)
-- Identify what vocabulary has been used (list specific words)
-- Identify what grammatical structures have appeared (note specific patterns)
-- Identify what sentence types have been used (statements, questions, commands)
-- It's OK for this section to be quite long.
+For each previous sentence, write down:
+- The specific topic it covers
+- Key vocabulary words it uses (list the actual words)
+- The grammatical structure it employs (be specific about the pattern)
+- The sentence type (statement, question, or command)
+
+It's OK for this section to be quite long - thoroughness here will help ensure your new sentence is truly different.
 
 **Step 2: Plan for Proficiency Level**
-Based on the specified level, determine what vocabulary complexity and grammatical structures are appropriate. Be specific about what you will use.
+Based on the specified level, determine:
+- What vocabulary complexity is appropriate
+- What grammatical structures you will use
+- For B1/B2: Confirm you will use maximum 1 subordinate clause
+- Be specific about your choices
 
 **Step 3: Map Tense Requirements**
-For the specified German tense, determine exactly what Ukrainian verb forms you will use. Explain how these Ukrainian forms will naturally map to the target German tense when translated.
+For the specified German tense:
+- Determine exactly what Ukrainian verb forms you will use
+- Explain how these Ukrainian forms will naturally map to the target German tense when translated
 
 **Step 4: Plan Optional Constraint Integration** (if provided)
-If a constraint is provided, explain exactly how it will appear in the German translation. Then work backwards to plan how you will construct the Ukrainian sentence to achieve this naturally.
+If a constraint is provided:
+- Explain exactly how it will appear in the German translation
+- Work backwards to plan how you will construct the Ukrainian sentence to achieve this naturally
+
+If no constraint is provided, note that this step does not apply.
 
 **Step 5: Select Novel Topic**
-Choose a specific topic that provides good variety from the previous sentences. Be creative and consider diverse domains.
+- Choose a specific topic that provides good variety from the previous sentences
+- Be creative and consider diverse domains
+- Explain why this topic is different
 
 **Step 6: Decide Sentence Structure**
-Decide what sentence type (statement, question, or command) and what specific structure will accomplish all your goals while differing from previous sentences.
+- Decide what sentence type (statement, question, or command) you will use
+- Decide what specific grammatical structure will accomplish all your goals
+- Confirm this differs from previous sentences
 
 **Step 7: Draft and Verify**
 - Draft your Ukrainian sentence
-- Write out the complete German translation in full
-- Identify each main verb in the German translation and explicitly label its tense
+- Write out the complete German translation
+- For each verb in the German translation, explicitly write: "[verb] - [tense]" to verify the tense
 - Verify the German translation uses the correct target tense
 - Verify the proficiency level is appropriate
+- **If the level is B1/B2: Explicitly count and list out the clauses (e.g., "Main clause: ..., Subordinate clause 1: ...")
+  and confirm there is maximum 1 subordinate clause in addition to the main clause**
 - Verify the optional constraint is naturally incorporated (if applicable)
 - Verify the topic, vocabulary, and structure differ from previous sentences
 
-## Output Format
+# Output Format
 
 Your complete response should follow this structure:
 
-```
-<sentence_planning>
-[Your detailed internal analysis addressing all 7 steps above. This section can be quite long.]
-</sentence_planning>
-
-<ukrainian_sentence>
-[Your final Ukrainian sentence - nothing else]
-</ukrainian_sentence>
-```
-
-**CRITICAL**: After completing your planning in the `<sentence_planning>` tags, output ONLY your final Ukrainian sentence inside `<ukrainian_sentence>` tags. Do not include any explanations, translations, notes, or additional text of any kind outside these tags.
-
-Example output structure:
-
 <sentence_planning>
 Step 1: Analyze Previous Sentences
-[Your analysis here...]
+[Your detailed analysis here - this can be quite long]
 
 Step 2: Plan for Proficiency Level
-[Your planning here...]
+[Your planning here]
 
 Step 3: Map Tense Requirements
-[Your planning here...]
+[Your planning here]
 
 Step 4: Plan Optional Constraint Integration
-[Your planning here if applicable...]
+[Your planning here if applicable, or note that no constraint was provided]
 
 Step 5: Select Novel Topic
-[Your planning here...]
+[Your planning here]
 
 Step 6: Decide Sentence Structure
-[Your planning here...]
+[Your planning here]
 
 Step 7: Draft and Verify
-[Your draft and verification here...]
+[Your draft and verification here]
 </sentence_planning>
 
 <ukrainian_sentence>
-[Only the Ukrainian sentence appears here]
+[Your final Ukrainian sentence only - nothing else]
 </ukrainian_sentence>
-"""
-    return prompt
+
+**CRITICAL**: The `<ukrainian_sentence>` tags must contain ONLY the Ukrainian sentence itself.
+Do not include any explanations, translations, notes, or additional text of any kind.
+""")
+    return prompt % params

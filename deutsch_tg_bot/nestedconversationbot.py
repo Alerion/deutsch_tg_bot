@@ -93,7 +93,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     keyboard = InlineKeyboardMarkup(buttons)
 
     # If we're starting over we don't need to send a new message
-    if context.user_data.get(START_OVER):
+    if context.user_data and context.user_data.get(START_OVER):
         await update.callback_query.answer()
         await update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
     else:

@@ -13,6 +13,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "mypy==1.18.2",
     "pre-commit~=4.4.0",
     "ruff~=0.14.0",
 ]
@@ -29,3 +30,14 @@ extend-select = ["E501", "RUF100", "I"]
 
 [tool.ruff.lint.pycodestyle]
 max-line-length = 120
+
+[tool.mypy]
+packages = ["deutsch_tg_bot"]
+python_version = "3.14"
+# mypy_path = "mypy_stubs"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+enable_error_code = [
+    "truthy-bool",
+]

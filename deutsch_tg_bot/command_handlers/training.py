@@ -21,7 +21,10 @@ NEW_EXERCISE = 3
 END = ConversationHandler.END
 
 
-async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    if update.message is None or update.message.text is None:
+        raise ValueError("Expected a message in update")
+
     context.user_data["session"] = UserSession()
 
     await update.message.reply_text(
@@ -32,7 +35,10 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     return STORE_LEVEL
 
 
-async def store_level(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def store_level(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    if update.message is None or update.message.text is None:
+        raise ValueError("Expected a message in update")
+
     user_session = cast(UserSession, context.user_data["session"])
 
     try:
@@ -53,9 +59,12 @@ async def store_level(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     return STORE_SENTENCE_CONSTRAINT
 
 
-async def store_sentence_constraint(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def store_sentence_constraint(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    if update.message is None or update.message.text is None:
+        raise ValueError("Expected a message in update")
+
     user_session = cast(UserSession, context.user_data["session"])
-    message_text = update.message.text.strip() if update.message else ""
+    message_text = update.message.text.strip()
 
     if message_text and message_text != "/skip":
         user_session.sentence_constraint = update.message.text.strip()
