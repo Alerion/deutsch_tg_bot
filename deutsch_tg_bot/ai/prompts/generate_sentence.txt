@@ -1,0 +1,179 @@
+You are generating Ukrainian sentences for a Telegram bot that teaches German to Ukrainian speakers.
+Your task is to create exactly ONE Ukrainian sentence that users will translate into German as a language learning exercise.
+
+Here are the sentences you have previously generated. Your new sentence must be completely different from all of these:
+
+<previous_sentences>
+{{previous_sentences}}
+</previous_sentences>
+
+Here is the German proficiency level for this sentence:
+
+<level>
+{{level}}
+</level>
+
+Here is the target German tense that the translation should naturally use:
+
+<tense>
+{{tense}}
+</tense>
+
+Here is an optional constraint that may contain a specific German word, phrase,
+or grammatical structure that should naturally appear in the German translation. This field may be empty:
+
+<optional_constraint>
+{{optional_constraint}}
+</optional_constraint>
+
+# Your Task
+
+Generate a Ukrainian sentence that meets all the requirements specified below.
+Before providing your final sentence, work through your planning systematically
+inside <sentence_planning> tags to ensure all requirements are met.
+
+# Requirements
+
+## 1. Diversity Requirement
+
+Your new sentence must differ from ALL previous sentences in these ways:
+
+- **Topic/subject matter**: Choose from diverse domains such as daily life, work,
+  hobbies, travel, family, food, weather, education, health, technology, culture, politics,
+  environment, sports, entertainment, etc. Avoid topics that have already been covered.
+
+- **Vocabulary**: Use different words than those appearing in previous sentences.
+
+- **Grammatical structures**: Use different sentence patterns and constructions than those in previous sentences.
+
+- **Sentence type**: Vary between statements, questions, and commands.
+  Choose a type that provides good variety from the previous sentences.
+
+## 2. Proficiency Level Requirement
+
+Adjust the complexity of your sentence based on the specified German proficiency level:
+
+**A1/A2 (Beginner):**
+- Use simple everyday situations and basic actions
+- Use common, basic vocabulary
+- Keep sentence structures straightforward with simple verb forms
+- Use basic clause constructions
+
+**B1/B2 (Intermediate):**
+- Include more complex situations and abstract concepts
+- Use varied sentence constructions and a wider vocabulary range
+- You may use compound sentences
+- **IMPORTANT: Use a maximum of 1 subordinate clause in addition to the main clause**
+
+**C1/C2 (Advanced):**
+- Use sophisticated vocabulary and complex grammatical structures
+- Include abstract and nuanced concepts
+- Use idiomatic expressions and advanced discourse elements
+- Include multiple subordinate clauses, passive constructions, subjunctive mood, and stylistically refined language
+
+## 3. German Tense Requirement
+
+Construct your Ukrainian sentence so that the most natural German translation uses the specified tense.
+Here's how to think about each tense:
+
+- **Präsens**: Current states, habits, general facts, or ongoing actions
+- **Präsens Futur**: Future meanings expressed using present tense (scheduled events, immediate future)
+- **Perfekt**: Completed actions with present relevance or recent past events
+- **Präteritum**: Past events, narratives, or formal descriptions of past situations
+- **Futur I**: Future plans, predictions, or intentions using "werden + infinitive"
+- **Futur II**: Future perfect tense using "werden + past participle + haben/sein"
+- **Plusquamperfekt**: Past perfect tense expressing actions completed before another past action
+
+## 4. Optional Constraint Requirement
+
+If the `<optional_constraint>` field contains a value, construct your Ukrainian sentence so that when translated into German,
+the translation will naturally incorporate the specified German word, phrase, or grammatical structure.
+
+If the `<optional_constraint>` field is empty, you may ignore this requirement.
+
+# Planning Process
+
+Work through each of these steps systematically in your `<sentence_planning>` section:
+
+**Step 1: Analyze Previous Sentences**
+For each previous sentence, write down:
+- The specific topic it covers
+- Key vocabulary words it uses (list the actual words)
+- The grammatical structure it employs (be specific about the pattern)
+- The sentence type (statement, question, or command)
+
+It's OK for this section to be quite long - thoroughness here will help ensure your new sentence is truly different.
+
+**Step 2: Plan for Proficiency Level**
+Based on the specified level, determine:
+- What vocabulary complexity is appropriate
+- What grammatical structures you will use
+- For B1/B2: Confirm you will use maximum 1 subordinate clause
+- Be specific about your choices
+
+**Step 3: Map Tense Requirements**
+For the specified German tense:
+- Determine exactly what Ukrainian verb forms you will use
+- Explain how these Ukrainian forms will naturally map to the target German tense when translated
+
+**Step 4: Plan Optional Constraint Integration** (if provided)
+If a constraint is provided:
+- Explain exactly how it will appear in the German translation
+- Work backwards to plan how you will construct the Ukrainian sentence to achieve this naturally
+
+If no constraint is provided, note that this step does not apply.
+
+**Step 5: Select Novel Topic**
+- Choose a specific topic that provides good variety from the previous sentences
+- Be creative and consider diverse domains
+- Explain why this topic is different
+
+**Step 6: Decide Sentence Structure**
+- Decide what sentence type (statement, question, or command) you will use
+- Decide what specific grammatical structure will accomplish all your goals
+- Confirm this differs from previous sentences
+
+**Step 7: Draft and Verify**
+- Draft your Ukrainian sentence
+- Write out the complete German translation
+- For each verb in the German translation, explicitly write: "[verb] - [tense]" to verify the tense
+- Verify the German translation uses the correct target tense
+- Verify the proficiency level is appropriate
+- **If the level is B1/B2: Explicitly count and list out the clauses (e.g., "Main clause: ..., Subordinate clause 1: ...")
+  and confirm there is maximum 1 subordinate clause in addition to the main clause**
+- Verify the optional constraint is naturally incorporated (if applicable)
+- Verify the topic, vocabulary, and structure differ from previous sentences
+
+# Output Format
+
+Your complete response should follow this structure:
+
+<sentence_planning>
+Step 1: Analyze Previous Sentences
+[Your detailed analysis here - this can be quite long]
+
+Step 2: Plan for Proficiency Level
+[Your planning here]
+
+Step 3: Map Tense Requirements
+[Your planning here]
+
+Step 4: Plan Optional Constraint Integration
+[Your planning here if applicable, or note that no constraint was provided]
+
+Step 5: Select Novel Topic
+[Your planning here]
+
+Step 6: Decide Sentence Structure
+[Your planning here]
+
+Step 7: Draft and Verify
+[Your draft and verification here]
+</sentence_planning>
+
+<ukrainian_sentence>
+[Your final Ukrainian sentence only - nothing else]
+</ukrainian_sentence>
+
+**CRITICAL**: The `<ukrainian_sentence>` tags must contain ONLY the Ukrainian sentence itself.
+Do not include any explanations, translations, notes, or additional text of any kind.
