@@ -57,7 +57,30 @@ async def check_translation(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         check_result = await ai.check_translation(current_sentence, user_answer)
 
     user_session.conversation_messages = check_result.messages
-    message = translation_check_result_to_message(check_result)
+
+    corrected_sentence = translation_check_result_to_message(check_result)
+    user_session.sentences_history[-1].is_translation_correct = corrected_sentence is None
+
+    correct_answers_number = sum(
+        1 for sentence in user_session.sentences_history if sentence.is_translation_correct is True
+    )
+    total_result_message = (
+        f"*Загальний результат:* {correct_answers_number} з {len(user_session.sentences_history)}"
+    )
+
+    if corrected_sentence is None:
+        message = (
+            "Переклад правильний!\n\n"
+            f"{total_result_message}\n\n"
+            "Якщо у тебе є ще питання, задай їх. Або введи /next для наступного речення."
+        )
+    else:
+        message = (
+            f"{corrected_sentence}\n\n"
+            f"{total_result_message}\n\n"
+            "Якщо у тебе є ще питання, задай їх. Або введи /next для наступного речення."
+        )
+
     await update.message.reply_text(message, parse_mode="Markdown")
 
     return ANSWER_QUESTION
@@ -76,7 +99,12 @@ async def answer_questions(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             user_question,
         )
 
-    await update.message.reply_text(ai_reply, parse_mode="Markdown")
+    reply_message = (
+        ai_reply,
+        "Якщо у тебе є ще питання, задай їх. Або введи /next для наступного речення.",
+    )
+
+    await update.message.reply_text(reply_message, parse_mode="Markdown")
     return ANSWER_QUESTION
 
 
@@ -94,14 +122,15 @@ excercise_handler = ConversationHandler(
 )
 
 
-def translation_check_result_to_message(translation_check_result: ai.TranslationCheckResult) -> str:
+def translation_check_result_to_message(
+    translation_check_result: ai.TranslationCheckResult,
+) -> str | None:
     if translation_check_result.correct_translation is None:
-        return "Все вірно! Твій переклад правильний.\n\nУ тебе є якісь питання?"
+        return None
 
     correct_translation = translation_check_result.correct_translation
     correct_translation = correct_translation.replace("<error>", "*").replace("</error>", "*")
 
     message = f"\n\n*Правильний переклад:*\n{correct_translation}"
     message += f"\n\n*Пояснення:*\n{translation_check_result.explanation}"
-    message += "\n\nУ тебе є питання? Введи /next для наступного речення, якщо не маєш питань."
     return message

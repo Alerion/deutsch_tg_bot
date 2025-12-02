@@ -9,6 +9,7 @@ class Sentence:
     sentence: str
     level: DeutschLevel
     tense: DeutschTense
+    is_translation_correct: bool | None = None
 
 
 @dataclass
