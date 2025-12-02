@@ -33,7 +33,7 @@ async def check_translation(
     )
 
     messages = [{"role": "user", "content": prompt}]
-    response = await anthropic_client.messages.create(
+    message = await anthropic_client.messages.create(
         model=settings.ANTHROPIC_MODEL,
         max_tokens=4000,
         temperature=0.7,
@@ -43,8 +43,10 @@ async def check_translation(
         ],
     )
     rprint("--- AI translation evaluation ---")
-    rprint(response.content[0].text)
-    completion = response.content[0].text.strip()
+    rprint(message.content[0].text)
+    rprint("-------- Usage --------")
+    rprint(message.usage)
+    completion = message.content[0].text.strip()
     messages.append({"role": "assistant", "content": completion})
 
     correct_translation = extract_tag_content(completion, "correct_translation")

@@ -16,14 +16,16 @@ async def answer_question(
 ) -> tuple[list[MessageDict], str]:
     messages = deepcopy(messages)
     messages.append({"role": "user", "content": user_question})
-    response = await anthropic_client.messages.create(
+    message = await anthropic_client.messages.create(
         model=settings.ANTHROPIC_MODEL,
         max_tokens=2000,
         temperature=0.7,
         messages=messages,
     )
     rprint("--- AI Answer Reply ---")
-    rprint(response.content[0].text)
-    completion = response.content[0].text.strip()
+    rprint(message.content[0].text)
+    rprint("-------- Usage --------")
+    rprint(message.usage)
+    completion = message.content[0].text.strip()
     messages.append({"role": "assistant", "content": completion})
     return messages, completion

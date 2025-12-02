@@ -26,7 +26,7 @@ async def generate_sentence(
         previous_sentences=previous_sentences,
         optional_constraint=optional_constraint,
     )
-    response = await anthropic_client.messages.create(
+    message = await anthropic_client.messages.create(
         model=settings.ANTHROPIC_MODEL,
         max_tokens=3000,
         temperature=1.0,
@@ -36,8 +36,10 @@ async def generate_sentence(
         ],
     )
     rprint("--- AI generated sentence ---")
-    rprint(response.content[0].text)
-    completion = response.content[0].text.strip()
+    rprint(message.content[0].text)
+    rprint("-------- Usage --------")
+    rprint(message.usage)
+    completion = message.content[0].text.strip()
     ukrainian_sentence = extract_tag_content(completion, "ukrainian_sentence")
     return Sentence(
         sentence=ukrainian_sentence,
