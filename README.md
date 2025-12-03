@@ -10,5 +10,4 @@ Install pre-commit hooks:
 
 Format and check code:
 
-    uv run ruff format
-    uv run ruff check --fix
+    just check-code
