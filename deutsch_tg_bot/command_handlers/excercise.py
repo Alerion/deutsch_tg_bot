@@ -100,8 +100,7 @@ async def answer_questions(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         )
 
     reply_message = (
-        f"{ai_reply}\n\n"
-        "Якщо у тебе є ще питання, задай їх. Або введи /next для наступного речення.",
+        f"{ai_reply}\n\nЯкщо у тебе є ще питання, задай їх. Або введи /next для наступного речення."
     )
 
     await update.message.reply_text(reply_message, parse_mode="Markdown")

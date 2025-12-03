@@ -16,6 +16,12 @@ async def answer_question(
 ) -> tuple[list[MessageDict], str]:
     messages = deepcopy(messages)
     messages.append({"role": "user", "content": user_question})
+
+    if settings.MOCK_AI:
+        completion = "Я не знаю відповіді на це питання."
+        messages.append({"role": "assistant", "content": completion})
+        return messages, completion
+
     message = await anthropic_client.messages.create(
         model=settings.ANTHROPIC_MODEL,
         max_tokens=2000,

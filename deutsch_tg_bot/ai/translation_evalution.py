@@ -19,8 +19,8 @@ anthropic_client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
 @dataclass
 class TranslationCheckResult:
     messages: list[MessageDict]
-    correct_translation: str | None
-    explanation: str | None
+    correct_translation: str | None = None
+    explanation: str | None = None
 
 
 async def check_translation(
@@ -33,12 +33,17 @@ async def check_translation(
     )
 
     messages = [{"role": "user", "content": prompt}]
+    if settings.MOCK_AI:
+        return TranslationCheckResult(
+            messages=[*messages, {"role": "assistant", "content": "Все вірно."}],
+        )
+
     message = await anthropic_client.messages.create(
         model=settings.ANTHROPIC_MODEL,
         max_tokens=4000,
         temperature=0.7,
         messages=[
-            {"role": "user", "content": prompt},
+            *messages,
             {"role": "assistant", "content": "<analysis>"},
         ],
     )

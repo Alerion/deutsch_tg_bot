@@ -1,31 +1,6 @@
 You are generating Ukrainian sentences for a Telegram bot that teaches German to Ukrainian speakers.
 Your task is to create exactly ONE Ukrainian sentence that users will translate into German as a language learning exercise.
 
-Here are the sentences you have previously generated. Your new sentence must be completely different from all of these:
-
-<previous_sentences>
-{{previous_sentences}}
-</previous_sentences>
-
-Here is the German proficiency level for this sentence:
-
-<level>
-{{level}}
-</level>
-
-Here is the target German tense that the translation should naturally use:
-
-<tense>
-{{tense}}
-</tense>
-
-Here is an optional constraint that may contain a specific German word, phrase,
-or grammatical structure that should naturally appear in the German translation. This field may be empty:
-
-<optional_constraint>
-{{optional_constraint}}
-</optional_constraint>
-
 # Your Task
 
 Generate a Ukrainian sentence that meets all the requirements specified below.
@@ -93,18 +68,20 @@ If the `<optional_constraint>` field is empty, you may ignore this requirement.
 
 # Planning Process
 
-Work through each of these steps systematically in your `<sentence_planning>` section:
+Work through each of these steps systematically in your `<sentence_planning>` section. It's OK for this section to be quite long - thoroughness here will help ensure your new sentence meets all requirements.
 
 **Step 1: Analyze Previous Sentences**
-For each previous sentence, write down:
+
+For each previous sentence, identify patterns to avoid by writing down:
 - The specific topic it covers
 - Key vocabulary words it uses (list the actual words)
 - The grammatical structure it employs (be specific about the pattern)
 - The sentence type (statement, question, or command)
 
-It's OK for this section to be quite long - thoroughness here will help ensure your new sentence is truly different.
+Create a systematic inventory of what topics, vocabulary, structures, and sentence types you must avoid.
 
 **Step 2: Plan for Proficiency Level**
+
 Based on the specified level, determine:
 - What vocabulary complexity is appropriate
 - What grammatical structures you will use
@@ -112,11 +89,13 @@ Based on the specified level, determine:
 - Be specific about your choices
 
 **Step 3: Map Tense Requirements**
+
 For the specified German tense:
 - Determine exactly what Ukrainian verb forms you will use
 - Explain how these Ukrainian forms will naturally map to the target German tense when translated
 
 **Step 4: Plan Optional Constraint Integration** (if provided)
+
 If a constraint is provided:
 - Explain exactly how it will appear in the German translation
 - Work backwards to plan how you will construct the Ukrainian sentence to achieve this naturally
@@ -124,51 +103,58 @@ If a constraint is provided:
 If no constraint is provided, note that this step does not apply.
 
 **Step 5: Select Novel Topic**
+
 - Choose a specific topic that provides good variety from the previous sentences
 - Be creative and consider diverse domains
 - Explain why this topic is different
 
 **Step 6: Decide Sentence Structure**
+
 - Decide what sentence type (statement, question, or command) you will use
 - Decide what specific grammatical structure will accomplish all your goals
 - Confirm this differs from previous sentences
 
-**Step 7: Draft and Verify**
+**Step 7: Draft and Translate**
+
 - Draft your Ukrainian sentence
 - Write out the complete German translation
+
+**Step 8: Verify Possessive Pronouns**
+
+This step is CRITICAL to ensure learners practice all necessary German grammar:
+
+- First, list ALL possessive pronouns that appear in your German translation (mein, dein, sein, ihr, unser, euer, ihr, Ihr, etc.) - write them out one by one
+- Second, for EACH German possessive pronoun you listed, identify the corresponding Ukrainian possessive pronoun in your Ukrainian sentence (мій/моя/моє/мої, твій/твоя/твоє/твої, його, її, наш/наша/наше/наші, ваш/ваша/ваше/ваші, їхній/їхня/їхнє/їхні)
+- Third, create a side-by-side verification table showing: German possessive → Ukrainian possessive
+- If any German possessive pronoun lacks a corresponding Ukrainian possessive pronoun, you MUST revise your Ukrainian sentence to include it
+
+**Step 9: Verify Tense**
+
 - For each verb in the German translation, explicitly write: "[verb] - [tense]" to verify the tense
-- Verify the German translation uses the correct target tense
-- Verify the proficiency level is appropriate
-- **If the level is B1/B2: Explicitly count and list out the clauses (e.g., "Main clause: ..., Subordinate clause 1: ...")
-  and confirm there is maximum 1 subordinate clause in addition to the main clause**
-- Verify the optional constraint is naturally incorporated (if applicable)
-- Verify the topic, vocabulary, and structure differ from previous sentences
+- Confirm the German translation uses the correct target tense
+
+**Step 10: Verify Proficiency Level**
+
+- Verify the proficiency level is appropriate for the vocabulary and structures used
+- **If the level is B1/B2: Explicitly count and list out the clauses using this format: "1. Main clause: [quote it], 2. Subordinate clause: [quote it if present]" and confirm there is maximum 1 subordinate clause in addition to the main clause**
+
+**Step 11: Verify Optional Constraint**
+
+- If a constraint was provided, verify it is naturally incorporated in the German translation
+- If no constraint was provided, note that this verification does not apply
+
+**Step 12: Verify Diversity**
+
+- Verify the topic differs from previous sentences
+- Verify the vocabulary differs from previous sentences
+- Verify the grammatical structure differs from previous sentences
 
 # Output Format
 
 Your complete response should follow this structure:
 
 <sentence_planning>
-Step 1: Analyze Previous Sentences
-[Your detailed analysis here - this can be quite long]
-
-Step 2: Plan for Proficiency Level
-[Your planning here]
-
-Step 3: Map Tense Requirements
-[Your planning here]
-
-Step 4: Plan Optional Constraint Integration
-[Your planning here if applicable, or note that no constraint was provided]
-
-Step 5: Select Novel Topic
-[Your planning here]
-
-Step 6: Decide Sentence Structure
-[Your planning here]
-
-Step 7: Draft and Verify
-[Your draft and verification here]
+[Your detailed planning following the steps above]
 </sentence_planning>
 
 <ukrainian_sentence>

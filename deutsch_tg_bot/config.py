@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     ANTHROPIC_MODEL: str = "claude-haiku-4-5"
 
     PREVIOUS_SENTENCES_NUMBER: int = 5
+    MOCK_AI: bool = False
 
 
 settings = Settings()

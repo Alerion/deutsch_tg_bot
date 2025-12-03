@@ -1,0 +1,21 @@
+Here are the sentences you have previously generated. Your new sentence must be completely different from all of these:
+
+<previous_sentences>
+{{previous_sentences}}
+</previous_sentences>
+
+Here is the German proficiency level for this sentence:
+
+<level>
+{{level}}
+</level>
+
+Here is the target German tense that the translation should naturally use:
+
+<tense>
+{{tense}}
+</tense>
+
+<optional_constraint>
+{{optional_constraint}}
+</optional_constraint>

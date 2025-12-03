@@ -10,6 +10,9 @@ anthropic_client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
 
 
 def start_bot() -> None:
+    if settings.MOCK_AI:
+        rprint("[yellow]Warning:[/yellow] MOCK_AI is enabled. Using mock AI responses.")
+
     application = Application.builder().token(settings.TELEGRAM_BOT_TOKEN).build()
     application.add_handler(training_handler)
     rprint("Witing for commands...")

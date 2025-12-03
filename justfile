@@ -5,3 +5,6 @@ check-code:
 
 commit:
     superclaude commit
+
+start:
+    uv run python -m main start_bot
