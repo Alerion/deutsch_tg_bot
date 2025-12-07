@@ -1,10 +1,15 @@
 import random
+import time
 from functools import cache
 from itertools import cycle
 from typing import Any
 
 import anthropic
 from rich import print as rprint
+from rich.console import Group
+from rich.markdown import Markdown
+from rich.panel import Panel
+from rich.pretty import Pretty
 
 from deutsch_tg_bot.ai.anthropic_utils import (
     extract_tag_content,
@@ -17,6 +22,11 @@ from deutsch_tg_bot.user_session import Sentence
 
 anthropic_client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
 
+# https://docs.anthropic.com/en/docs/about-claude/models/overview#model-names
+ANTHROPIC_MODEL = "claude-haiku-4-5"
+
+_times = []
+
 
 async def generate_sentence(
     level: DeutschLevel, previous_sentences: list[Sentence], optional_constraint: str | None
@@ -28,15 +38,16 @@ async def generate_sentence(
         return get_mocked_sentence(level, tense)
 
     system_prompt = get_sentence_generator_system_prompt()
-    user_prompt = build_dynamic_user_prompt(
+    user_prompt, prompt_params = build_dynamic_user_prompt(
         level=level,
         tense=tense,
         previous_sentences=previous_sentences,
         optional_constraint=optional_constraint,
     )
 
+    start_time = time.time()
     message = await anthropic_client.messages.create(
-        model=settings.ANTHROPIC_MODEL,
+        model=ANTHROPIC_MODEL,
         max_tokens=3000,
         temperature=1.0,
         system=[
@@ -52,10 +63,20 @@ async def generate_sentence(
         ],
     )
 
-    rprint("--- AI generated sentence ---")
-    rprint(message.content[0].text)
-    rprint("-------- Usage --------")
-    rprint(message.usage)
+    _times.append(time.time() - start_time)
+    average_time = sum(_times) / len(_times)
+    panel_group = Group(
+        Panel(
+            Markdown(
+                f"- Model: {ANTHROPIC_MODEL}\n"
+                f"- Time taken: {_times[0]:.2f} seconds\n"
+                f"- Average time: {average_time:.2f} seconds\n",
+            )
+        ),
+        Panel(Pretty(prompt_params, expand_all=True), title="Prompt Parameters"),
+        Panel(Pretty(message.usage, expand_all=True), title="AI Usage"),
+    )
+    rprint(Panel(panel_group, title="Sentence Generation", border_style="green"))
 
     completion = message.content[0].text.strip()
     ukrainian_sentence = extract_tag_content(completion, "ukrainian_sentence")
@@ -76,7 +97,7 @@ def build_dynamic_user_prompt(
     tense: DeutschTense,
     previous_sentences: list[Sentence],
     optional_constraint: str | None,
-) -> str:
+) -> tuple[str, dict[str, Any]]:
     previous_sentences = [s.sentence for s in previous_sentences]
     params = {
         "previous_sentences": "\n".join(previous_sentences),
@@ -84,9 +105,8 @@ def build_dynamic_user_prompt(
         "tense": tense.value,
         "optional_constraint": optional_constraint or "",
     }
-    rprint("--- AI params to generate sentence ---")
-    rprint(params)
-    return get_sentence_generator_message_template() % params
+    prompt = get_sentence_generator_message_template() % params
+    return prompt, params
 
 
 @cache
