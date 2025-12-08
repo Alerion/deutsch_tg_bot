@@ -16,6 +16,8 @@ Here is the target German tense that the translation should naturally use:
 {{tense}}
 </tense>
 
+Here is an optional constraint (this may be empty):
+
 <optional_constraint>
 {{optional_constraint}}
 </optional_constraint>

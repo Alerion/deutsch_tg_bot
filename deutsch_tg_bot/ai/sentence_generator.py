@@ -79,9 +79,20 @@ async def generate_sentence(
     rprint(Panel(panel_group, title="Sentence Generation", border_style="green"))
 
     completion = message.content[0].text.strip()
+    # rprint(
+    #     Panel(
+    #         Markdown(completion),
+    #         title="Generated Sentence",
+    #         subtitle="full response",
+    #         border_style="green"
+    #     )
+    # )
+
     ukrainian_sentence = extract_tag_content(completion, "ukrainian_sentence")
+    german_sentence = extract_tag_content(completion, "german_sentence")
     return Sentence(
-        sentence=ukrainian_sentence,
+        ukrainian_sentence=ukrainian_sentence,
+        german_sentence=german_sentence,
         tense=tense,
         level=level,
     )
@@ -98,7 +109,7 @@ def build_dynamic_user_prompt(
     previous_sentences: list[Sentence],
     optional_constraint: str | None,
 ) -> tuple[str, dict[str, Any]]:
-    previous_sentences = [s.sentence for s in previous_sentences]
+    previous_sentences = [s.ukrainian_sentence for s in previous_sentences]
     params = {
         "previous_sentences": "\n".join(previous_sentences),
         "level": level.value,
@@ -132,7 +143,7 @@ async def get_system_prompt_token_count() -> dict[str, Any]:
 def get_mocked_sentence(level: DeutschLevel, tense: DeutschTense) -> Sentence:
     ukrainian_sentence = next(mocked_ukrainian_sentences)
     return Sentence(
-        sentence=ukrainian_sentence,
+        ukrainian_sentence=ukrainian_sentence,
         tense=tense,
         level=level,
     )

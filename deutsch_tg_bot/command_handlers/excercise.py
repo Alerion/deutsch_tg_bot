@@ -38,7 +38,7 @@ async def new_exercise(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     user_session.sentences_history.append(new_sentence)
     sentence_number = len(user_session.sentences_history)
     message = (
-        f"*{sentence_number}. Переклади речення:*\n{new_sentence.sentence}\n\n"
+        f"*{sentence_number}. Переклади речення:*\n{new_sentence.ukrainian_sentence}\n\n"
         f"*Час*: {new_sentence.tense.value}"
     )
     await update.message.reply_text(message, parse_mode="Markdown")

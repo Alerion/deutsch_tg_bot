@@ -87,7 +87,7 @@ def build_check_translation_prompt(
     user_translation: str,
 ) -> tuple[str, dict[str, Any]]:
     params = {
-        "ukrainian_sentence": ukrainian_sentence.sentence,
+        "ukrainian_sentence": ukrainian_sentence.ukrainian_sentence,
         "level": ukrainian_sentence.level.value,
         "tense": ukrainian_sentence.tense.value,
         "user_translation": user_translation,
