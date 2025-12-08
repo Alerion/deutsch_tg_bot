@@ -1,6 +1,19 @@
 from enum import Enum
 
 
+class SentenceType(str, Enum):
+    AFFIRMATIVE = "affirmative"
+    INTERROGATIVE = "interrogative"
+    NEGATIVE = "negative"
+
+
+SentenceTypeProbabilities: dict[SentenceType, float] = {
+    SentenceType.AFFIRMATIVE: 0.6,
+    SentenceType.INTERROGATIVE: 0.2,
+    SentenceType.NEGATIVE: 0.2,
+}
+
+
 class DeutschLevel(str, Enum):
     A1 = "A1"
     A2 = "A2"

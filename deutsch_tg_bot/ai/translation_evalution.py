@@ -33,11 +33,11 @@ class TranslationCheckResult:
 
 
 async def check_translation(
-    ukrainian_sentence: Sentence,
+    sentence: Sentence,
     user_translation: str,
 ) -> TranslationCheckResult:
     evaluate_prompt, prompt_params = build_check_translation_prompt(
-        ukrainian_sentence=ukrainian_sentence,
+        sentence=sentence,
         user_translation=user_translation,
     )
 
@@ -83,13 +83,14 @@ async def check_translation(
 
 
 def build_check_translation_prompt(
-    ukrainian_sentence: Sentence,
+    sentence: Sentence,
     user_translation: str,
 ) -> tuple[str, dict[str, Any]]:
     params = {
-        "ukrainian_sentence": ukrainian_sentence.ukrainian_sentence,
-        "level": ukrainian_sentence.level.value,
-        "tense": ukrainian_sentence.tense.value,
+        "german_sentence": sentence.german_sentence,
+        "ukrainian_sentence": sentence.ukrainian_sentence,
+        "level": sentence.level.value,
+        "tense": sentence.tense.value,
         "user_translation": user_translation,
     }
     prompt = get_translation_evaluation_prompt_template() % params

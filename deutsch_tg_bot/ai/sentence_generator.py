@@ -17,7 +17,13 @@ from deutsch_tg_bot.ai.anthropic_utils import (
     replace_promt_placeholder,
 )
 from deutsch_tg_bot.config import settings
-from deutsch_tg_bot.deutsh_enums import DEUTCH_LEVEL_TENSES, DeutschLevel, DeutschTense
+from deutsch_tg_bot.deutsh_enums import (
+    DEUTCH_LEVEL_TENSES,
+    DeutschLevel,
+    DeutschTense,
+    SentenceType,
+    SentenceTypeProbabilities,
+)
 from deutsch_tg_bot.user_session import Sentence
 
 anthropic_client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
@@ -32,6 +38,7 @@ async def generate_sentence(
     level: DeutschLevel, previous_sentences: list[Sentence], optional_constraint: str | None
 ) -> Sentence:
     tense = get_random_tense_for_level(level)
+    sentence_type = get_random_sentence_type()
 
     if settings.MOCK_AI:
         rprint("[yellow]Using MOCK_AI mode - returning mocked sentence[/yellow]")
@@ -41,6 +48,7 @@ async def generate_sentence(
     user_prompt, prompt_params = build_dynamic_user_prompt(
         level=level,
         tense=tense,
+        sentence_type=sentence_type,
         previous_sentences=previous_sentences,
         optional_constraint=optional_constraint,
     )
@@ -91,6 +99,7 @@ async def generate_sentence(
     ukrainian_sentence = extract_tag_content(completion, "ukrainian_sentence")
     german_sentence = extract_tag_content(completion, "german_sentence")
     return Sentence(
+        sentence_type=sentence_type,
         ukrainian_sentence=ukrainian_sentence,
         german_sentence=german_sentence,
         tense=tense,
@@ -103,17 +112,25 @@ def get_random_tense_for_level(level: DeutschLevel) -> DeutschTense:
     return random.choice(tenses)
 
 
+def get_random_sentence_type() -> SentenceType:
+    sentence_types = list(SentenceTypeProbabilities.keys())
+    probabilities = list(SentenceTypeProbabilities.values())
+    return random.choices(sentence_types, weights=probabilities, k=1)[0]
+
+
 def build_dynamic_user_prompt(
     level: DeutschLevel,
     tense: DeutschTense,
+    sentence_type: SentenceType,
     previous_sentences: list[Sentence],
     optional_constraint: str | None,
 ) -> tuple[str, dict[str, Any]]:
     previous_sentences = [s.ukrainian_sentence for s in previous_sentences]
     params = {
-        "previous_sentences": "\n".join(previous_sentences),
         "level": level.value,
         "tense": tense.value,
+        "sentence_type": sentence_type.value,
+        "previous_sentences": "\n".join(previous_sentences),
         "optional_constraint": optional_constraint or "",
     }
     prompt = get_sentence_generator_message_template() % params
@@ -133,7 +150,7 @@ def get_sentence_generator_system_prompt() -> str:
 async def get_system_prompt_token_count() -> dict[str, Any]:
     system_prompt = get_sentence_generator_system_prompt()
     response = await anthropic_client.messages.count_tokens(
-        model=settings.ANTHROPIC_MODEL,
+        model=ANTHROPIC_MODEL,
         system=system_prompt,
         messages=[{"role": "user", "content": "Hello"}],
     )

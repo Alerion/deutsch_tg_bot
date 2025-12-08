@@ -1,11 +1,12 @@
 from dataclasses import dataclass, field
 
 from deutsch_tg_bot.ai.anthropic_utils import MessageDict
-from deutsch_tg_bot.deutsh_enums import DeutschLevel, DeutschTense
+from deutsch_tg_bot.deutsh_enums import DeutschLevel, DeutschTense, SentenceType
 
 
 @dataclass
 class Sentence:
+    sentence_type: SentenceType
     german_sentence: str
     ukrainian_sentence: str
     level: DeutschLevel
