@@ -1,92 +1,38 @@
 You are generating Ukrainian-German sentence pairs for a language learning Telegram bot that teaches German to Ukrainian speakers. Your task is to create exactly ONE Ukrainian sentence that users will translate into German as a learning exercise, along with the expected German translation for validating user responses.
 
-## Input Parameters
-
-Here are the sentences you have previously generated. Your new sentence must be completely different from all of these:
-
-<previous_sentences>
-{{previous_sentences}}
-</previous_sentences>
-
-Here is the German proficiency level for this exercise:
-
-<level>
-{{level}}
-</level>
-
-Valid values: A1, A2, B1, B2, C1, C2
-
-Here is the target German tense that the translation should naturally use:
-
-<tense>
-{{tense}}
-</tense>
-
-Valid values: Präsens, Präsens Futur, Perfekt, Präteritum, Futur I, Futur II, Plusquamperfekt
-
-Here is the required sentence type:
-
-<sentence_type>
-{{sentence_type}}
-</sentence_type>
-
-Valid values:
-- affirmative: A declarative statement
-- interrogative: A question
-- negative: A sentence containing negation
-
-Here is an optional constraint (this may be empty):
-
-<optional_constraint>
-{{optional_constraint}}
-</optional_constraint>
-
-If provided, construct your sentence so the German translation naturally incorporates this specific word, phrase, or grammatical structure.
-
-## Your Task
-
-Generate a single Ukrainian sentence that meets all requirements. Also generate the corresponding German translation that learners should produce.
-
-Before providing your final output, work through a systematic planning process inside `<sentence_planning>` tags. Take your time with each verification step—thoroughness here ensures your sentence meets all requirements. It is completely normal and expected for this planning section to be quite long. A detailed, lengthy planning process is a sign of careful work.
-
 ## Requirements
 
-### Requirement 1: Diversity from Previous Sentences
-
-Your new sentence must differ from ALL previous sentences in these ways:
-
-**Topic/Subject Matter**: Choose from diverse domains (daily life, work, hobbies, travel, family, food, weather, education, health, technology, culture, politics, environment, sports, entertainment, etc.). Avoid topics covered in previous sentences.
-
-**Vocabulary**: Use different Ukrainian words than those in previous sentences. Avoid repeating vocabulary items.
-
-**Grammatical Structures**: Use different sentence patterns and constructions. Vary your syntactic approach.
-
-**Sentence Type**: While you must match the required `sentence_type` parameter, ensure variety in how you construct that type (e.g., if making a question, vary between yes/no questions, wh-questions, etc.).
-
-### Requirement 2: Proficiency Level Appropriateness
+### Requirement 1: Proficiency Level Appropriateness
 
 Adjust complexity based on the specified German proficiency level:
 
-**A1/A2 (Beginner):**
-- Use simple everyday situations and basic actions
-- Use common, basic vocabulary
-- Keep sentence structures straightforward with simple verb forms
-- Use basic clause constructions
-- **CRITICAL: Include exactly ONE adjective to teach German declension**
+**A2 (Elementary Advanced):**
+- **Vocabulary scope**: Use 1000-1500 basic words, include simple connectors (und/aber/oder), basic prepositions (in/auf/mit/für/von), simple time expressions (heute/gestern/morgen)
+- **Grammar focus**: Present tense (Präsens) and perfect tense (Perfekt) with haben/sein, basic modal verbs (können/müssen/wollen), simple past of sein/haben (war/hatte)
+- **Case usage**: Clear nominative/accusative distinction, introduce basic dative with common prepositions (mit dem/in der)
+- **Sentence complexity**: 8-12 words maximum, may include one simple coordination with "und/aber"
+- **Declension practice**: **CRITICAL: Include exactly ONE adjective** in clear case contexts (dative: "mit der schönen Frau", accusative: "für den kleinen Jungen")
+- **Topics**: Routine activities, simple past experiences, basic future plans, simple shopping scenarios, describing people and objects
+- **Avoid**: Complex temporal sequences, subjunctive mood, relative clauses
 
-**B1/B2 (Intermediate):**
-- Include more complex situations and abstract concepts
-- Use varied sentence constructions and wider vocabulary range
-- You may use compound sentences
-- **IMPORTANT: Use a maximum of 1 subordinate clause in addition to the main clause**
+**B1 (Intermediate Threshold):**
+- **Vocabulary scope**: 1500-2500 words including abstract concepts, more sophisticated connectors (weil/dass/obwohl), varied prepositions with multiple cases
+- **Grammar focus**: All basic tenses (Präsens, Perfekt, Präteritum), modal verbs in various contexts, introduce subjunctive II for polite requests (könnte/würde)
+- **Sentence complexity**: 10-15 words, **IMPORTANT: Use maximum 1 subordinate clause** (e.g., main clause + weil-clause OR main clause + dass-clause)
+- **Case mastery**: Confident use of all four cases, including genitive in simple contexts, two-way prepositions with clear Akkusativ/Dativ distinction
+- **Adjective usage**: Multiple adjectives allowed, complex declension patterns, comparative and superlative forms
+- **Topics**: Personal opinions and experiences, hypothetical situations, past narratives, future plans with reasoning, workplace scenarios
+- **Advanced structures**: Relative clauses (but count as THE subordinate clause), infinitive constructions with "zu"
 
-**C1/C2 (Advanced):**
-- Use sophisticated vocabulary and complex grammatical structures
-- Include abstract and nuanced concepts
-- Use idiomatic expressions and advanced discourse elements
-- Include multiple subordinate clauses, passive constructions, subjunctive mood, and stylistically refined language
+**B2 (Intermediate Mastery):**
+- **Vocabulary scope**: 2500-3500 words including specialized vocabulary, academic and professional terms, nuanced expressions
+- **Grammar focus**: All tenses including Futur I/II and Plusquamperfekt, subjunctive II for hypothetical scenarios, passive voice in common contexts
+- **Sentence complexity**: 12-18 words, **IMPORTANT: Use maximum 1 subordinate clause** but allow more sophisticated clause types (conditional, temporal, causal)
+- **Advanced structures**: Participial constructions, extended infinitive phrases, nominalized verbs, modal particles for nuance
+- **Stylistic elements**: Register awareness (formal vs. informal), discourse markers, text cohesion devices
+- **Topics**: Abstract concepts, complex argumentation, cultural topics, professional and academic contexts, expressing detailed opinions and justifications
 
-### Requirement 3: German Tense Targeting
+### Requirement 2: German Tense Targeting
 
 Construct your Ukrainian sentence so the most natural German translation uses the specified tense:
 
@@ -98,7 +44,7 @@ Construct your Ukrainian sentence so the most natural German translation uses th
 - **Futur II**: Future perfect tense using "werden + past participle + haben/sein"
 - **Plusquamperfekt**: Past perfect tense expressing actions completed before another past action
 
-### Requirement 4: Sentence Type Matching
+### Requirement 3: Sentence Type Matching
 
 Construct your sentence to match the required `sentence_type`:
 
@@ -106,7 +52,7 @@ Construct your sentence to match the required `sentence_type`:
 - **interrogative**: Create a question
 - **negative**: Create a sentence containing negation (e.g., using "не", "ніколи", "ніхто", etc. in Ukrainian, which translates to "nicht", "kein", "nie", "niemals", "niemand", etc. in German)
 
-### Requirement 5: Optional Constraint Integration
+### Requirement 4: Optional Constraint Integration
 
 If an optional constraint is provided, construct your Ukrainian sentence so the German translation naturally incorporates the specified German word, phrase, or grammatical structure.
 
@@ -114,110 +60,46 @@ If no optional constraint is provided, you can ignore this requirement.
 
 ## Planning Process
 
-Work through each step systematically inside your `<sentence_planning>` section. Thoroughness ensures your sentence meets all requirements—it is completely acceptable and expected for this section to be quite long. Don't rush through the verification steps; detailed analysis is encouraged.
+Work through these steps inside your `<sentence_planning>` section:
 
-**Step 1: Analyze Previous Sentences**
-
-For each previous sentence, identify patterns you must avoid. Go through them one by one and note:
-- The specific topic it covers
-- Key vocabulary words it uses—write out the Ukrainian sentence word by word, listing each word with its position: "Word 1: [word], Word 2: [word], Word 3: [word]..." This creates a comprehensive vocabulary inventory that you will reference in Step 14.
-- The grammatical structure it employs (be specific about the pattern)
-- The sentence type (statement, question, or contains negation)
-
-After analyzing all previous sentences, create a consolidated "must avoid" list:
-- All topics covered
-- All Ukrainian vocabulary words used (complete list from your word-by-word extraction—this list may be long, and that's good)
-- All grammatical structures employed
-- All sentence types used
-
-**Step 2: Plan for Proficiency Level**
-
+**Step 1: Plan for Proficiency Level**
 Based on the specified level, determine:
 - What vocabulary complexity is appropriate
 - What grammatical structures you will use
-- For A1/A2: Confirm you will include exactly ONE adjective to teach declension
+- For A2: Confirm you will include exactly ONE adjective to teach declension
 - For B1/B2: Confirm you will use maximum 1 subordinate clause
 - Be specific about your choices
 
-**Step 3: Map Tense Requirements**
-
+**Step 2: Map Tense Requirements**
 For the specified German tense:
 - Determine exactly what Ukrainian verb forms you will use
 - Explain how these Ukrainian forms will naturally map to the target German tense when translated
 
-**Step 4: Plan Sentence Type**
-
+**Step 3: Plan Sentence Type**
 For the required sentence type:
 - If affirmative: Plan a clear declarative statement structure
 - If interrogative: Decide on question type (yes/no, wh-question, etc.) and structure
 - If negative: Plan which negation words you'll use in Ukrainian and how they'll translate to German negation
 
-**Step 5: Plan Optional Constraint Integration** (if provided)
-
+**Step 4: Plan Optional Constraint Integration** (if provided)
 If a constraint is provided:
 - Explain exactly how it will appear in the German translation
 - Work backwards to plan how you will construct the Ukrainian sentence to achieve this naturally
 
 If no constraint is provided, note that this step does not apply.
 
-**Step 6: Select Novel Topic**
-
-- Choose a specific topic that provides good variety from previous sentences
-- Be creative and consider diverse domains
-- Explain why this topic is different
-
-**Step 7: Decide Sentence Structure**
-
-- Confirm the sentence type matches the required `sentence_type` parameter
-- Decide what specific grammatical structure will accomplish all your goals
-- Confirm this differs from previous sentences
-
-**Step 8: Draft Ukrainian Sentence and Generate German Translation**
-
+**Step 5: Draft Ukrainian Sentence and Generate German Translation**
 - Draft your Ukrainian sentence
 - Write out the complete German translation that you expect learners to produce
 
-**Step 9: Verify Possessive Pronouns**
-
-This step is CRITICAL for ensuring grammar practice opportunities. Possessive pronouns in German require proper declension, which is an important learning point:
-
-- First, examine your German translation word by word: "Word 1: [word] (possessive pronoun: yes/no), Word 2: [word] (possessive pronoun: yes/no)..." and systematically identify ALL possessive pronouns (mein, dein, sein, ihr, unser, euer, ihr, Ihr, etc.). If you find none, write "None found"
-- Second, for EACH German possessive pronoun identified, locate the corresponding Ukrainian possessive pronoun in your Ukrainian sentence (мій/моя/моє/мої, твій/твоя/твоє/твої, його, її, наш/наша/наше/наші, ваш/ваша/ваше/ваші, їхній/їхня/їхнє/їхні)
-- Third, create a verification table showing each German possessive matched with its Ukrainian counterpart:
-  - German: [possessive] → Ukrainian: [possessive]
-- If any German possessive lacks a corresponding Ukrainian possessive, you MUST revise your Ukrainian sentence to include the appropriate possessive pronoun
-
-**Step 10: Verify Tense**
-
-- For each verb in the German translation, explicitly write: "[verb] - [tense]"
-- Confirm the German translation uses the correct target tense
-
-**Step 11: Verify Proficiency Level**
-
+**Step 6: Verify Requirements**
 - Verify the proficiency level is appropriate for the vocabulary and structures used
-- **If the level is A1/A2: Go through your Ukrainian sentence word by word, labeling each: "Word 1: [word] (adjective: yes/no), Word 2: [word] (adjective: yes/no)..." Then write "Adjectives found: [list]" and count them explicitly: "Total count: [number]". Confirm there is exactly ONE adjective. If not, revise your sentence and repeat this entire counting process until you have exactly one adjective.**
-- **If the level is B1/B2: Identify each clause in your German translation by finding the main verb. Write: "Clause 1 (main): [quote complete clause] - main verb: [verb]" and "Clause 2 (subordinate, if present): [quote complete clause] - main verb: [verb]". Then write "Total subordinate clauses: [number]" and confirm there is maximum 1 subordinate clause. If not, revise and recount.**
-
-**Step 12: Verify Sentence Type**
-
-Confirm your sentence matches the required `sentence_type`:
-- **If affirmative**: Verify it is a declarative statement with no negation or question markers
-- **If interrogative**: Verify it is a properly formed question in both Ukrainian and German
-- **If negative**: Go through both sentences and explicitly identify all negation words. Write "Ukrainian negation words found: [list each word]" and "German negation words found: [list each word]". Confirm negation is present and natural in both languages.
-
-**Step 13: Verify Optional Constraint**
-
+- **If the level is A2: Confirm there is exactly ONE adjective in your Ukrainian sentence**
+- **If the level is B1/B2: Confirm there is maximum 1 subordinate clause in your German translation**
+- Confirm your sentence matches the required sentence type (affirmative/interrogative/negative)
 - If a constraint was provided, verify it is naturally incorporated in the German translation
-- If no constraint was provided, note that this verification does not apply
 
-**Step 14: Verify Diversity**
-
-- Verify the topic differs from previous sentences
-- Verify the vocabulary differs from previous sentences (reference the specific comprehensive vocabulary list from Step 1—check that none of your new Ukrainian words appear in that list)
-- Verify the grammatical structure differs from previous sentences
-
-**Step 15: Final German Translation Check**
-
+**Step 7: Final Check**
 - Review your German translation one final time
 - Confirm it is grammatically correct, natural-sounding, and appropriate for the proficiency level
 - Confirm it represents the expected translation that learners should produce
@@ -228,7 +110,7 @@ Structure your response as follows:
 
 ```
 <sentence_planning>
-[Your detailed planning following all 15 steps above, including all critical verification steps. This section should be thorough and is expected to be quite long. It's OK for this section to be quite long.]
+[Your planning following the 7 steps above. Keep this concise but thorough.]
 </sentence_planning>
 
 <german_sentence>
@@ -244,108 +126,5 @@ Structure your response as follows:
 - The `<german_sentence>` tags must contain ONLY the German sentence itself
 - The `<ukrainian_sentence>` tags must contain ONLY the Ukrainian sentence itself
 - Do not include any explanations, translations, notes, or additional text in these output tags
-
-### Example Output Structure
-
-Here is an example showing the correct format with generic placeholder content:
-
-```
-<sentence_planning>
-Step 1: Analyze Previous Sentences
-Previous sentence 1: [Ukrainian text]
-- Topic: [specific topic]
-- Ukrainian vocabulary (word by word): Word 1: [word], Word 2: [word], Word 3: [word]... [continue]
-- Grammatical structure: [description]
-- Sentence type: [type]
-
-Previous sentence 2: [Ukrainian text]
-- Topic: [specific topic]
-- Ukrainian vocabulary (word by word): Word 1: [word], Word 2: [word]... [continue]
-- Grammatical structure: [description]
-- Sentence type: [type]
-
-[Continue for all previous sentences]
-
-Consolidated "must avoid" list:
-- Topics covered: [list]
-- Ukrainian vocabulary used: [comprehensive list]
-- Grammatical structures used: [list]
-- Sentence types used: [list]
-
-Step 2: Plan for Proficiency Level
-Level: [A1/A2 / B1/B2 / C1/C2]
-Vocabulary complexity: [description]
-Grammatical structures: [specific structures]
-[Level-specific confirmations]
-
-Step 3: Map Tense Requirements
-Target German tense: [tense]
-Ukrainian verb forms to use: [forms]
-Mapping explanation: [how they correspond]
-
-Step 4: Plan Sentence Type
-Required type: [affirmative/interrogative/negative]
-Planned approach: [specific construction strategy]
-
-Step 5: Plan Optional Constraint Integration
-[Explanation or "No constraint provided"]
-
-Step 6: Select Novel Topic
-Topic selected: [topic]
-Justification: [why different]
-
-Step 7: Decide Sentence Structure
-Sentence type confirmation: [matches required parameter]
-Specific grammatical structure: [description]
-Confirmation: [differs from previous]
-
-Step 8: Draft Ukrainian Sentence and Generate German Translation
-Ukrainian draft: [sentence]
-German translation: [sentence]
-
-Step 9: Verify Possessive Pronouns
-Word-by-word scan: Word 1: [word] (possessive: yes/no)...
-German possessives found: [list or "None"]
-Verification: German: [x] → Ukrainian: [y]
-Result: [confirmation]
-
-Step 10: Verify Tense
-[verb1] - [tense]
-[verb2] - [tense]
-Confirmation: [correct tense used]
-
-Step 11: Verify Proficiency Level
-[Level-specific verification with word-by-word counting if needed]
-Confirmation: [requirements met]
-
-Step 12: Verify Sentence Type
-Required type: [affirmative/interrogative/negative]
-Verification: [confirmation with specific evidence]
-Result: [matches requirement]
-
-Step 13: Verify Optional Constraint
-[Verification or "Not applicable"]
-
-Step 14: Verify Diversity
-Topic: [how differs]
-Vocabulary: [how differs, referencing Step 1 list]
-Structure: [how differs]
-Final confirmation: [all diversity met]
-
-Step 15: Final German Translation Check
-Grammar: [verified]
-Naturalness: [verified]
-Level appropriateness: [verified]
-Final confirmation: [ready for learners]
-</sentence_planning>
-
-<german_sentence>
-[Only the German sentence with no other text]
-</german_sentence>
-
-<ukrainian_sentence>
-[Only the Ukrainian sentence with no other text]
-</ukrainian_sentence>
-```
 
 Please proceed with generating your Ukrainian sentence and its expected German translation following all requirements and planning steps.

@@ -26,12 +26,10 @@ async def new_exercise(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
         raise ValueError("Expected a message in update")
 
     user_session = cast(UserSession, context.user_data["session"])
-    previous_sentences = user_session.sentences_history[: settings.PREVIOUS_SENTENCES_NUMBER]
 
     async with progress(update, "Генерую нове речення"):
         new_sentence = await ai.generate_sentence(
             level=user_session.level,
-            previous_sentences=previous_sentences,
             optional_constraint=user_session.sentence_constraint,
         )
 

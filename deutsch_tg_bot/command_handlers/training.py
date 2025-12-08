@@ -98,7 +98,6 @@ def _get_level_keyboard() -> ReplyKeyboardMarkup:
             DeutschLevel.A2.value,
             DeutschLevel.B1.value,
             DeutschLevel.B2.value,
-            DeutschLevel.C1.value,
         ],
     ]
     return ReplyKeyboardMarkup(

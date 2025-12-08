@@ -1,18 +1,8 @@
-## Input Parameters
-
-Here are the sentences you have previously generated. Your new sentence must be completely different from all of these:
-
-<previous_sentences>
-{{previous_sentences}}
-</previous_sentences>
-
 Here is the German proficiency level for this exercise:
 
 <level>
 {{level}}
 </level>
-
-Valid values: A1, A2, B1, B2, C1, C2
 
 Here is the target German tense that the translation should naturally use:
 
@@ -20,20 +10,13 @@ Here is the target German tense that the translation should naturally use:
 {{tense}}
 </tense>
 
-Valid values: Präsens, Präsens Futur, Perfekt, Präteritum, Futur I, Futur II, Plusquamperfekt
-
 Here is the required sentence type:
 
 <sentence_type>
 {{sentence_type}}
 </sentence_type>
 
-Valid values:
-- affirmative: A declarative statement
-- interrogative: A question
-- negative: A sentence containing negation
-
-Here is an optional constraint (this may be empty):
+Here is an optional constraint :
 
 <optional_constraint>
 {{optional_constraint}}

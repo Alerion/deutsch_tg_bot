@@ -28,15 +28,13 @@ from deutsch_tg_bot.user_session import Sentence
 
 anthropic_client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
 
-# https://docs.anthropic.com/en/docs/about-claude/models/overview#model-names
+# https://platform.claude.com/docs/en/api/messages#model
 ANTHROPIC_MODEL = "claude-haiku-4-5"
 
 _times = []
 
 
-async def generate_sentence(
-    level: DeutschLevel, previous_sentences: list[Sentence], optional_constraint: str | None
-) -> Sentence:
+async def generate_sentence(level: DeutschLevel, optional_constraint: str | None) -> Sentence:
     tense = get_random_tense_for_level(level)
     sentence_type = get_random_sentence_type()
 
@@ -49,7 +47,6 @@ async def generate_sentence(
         level=level,
         tense=tense,
         sentence_type=sentence_type,
-        previous_sentences=previous_sentences,
         optional_constraint=optional_constraint,
     )
 
@@ -62,7 +59,10 @@ async def generate_sentence(
             {
                 "type": "text",
                 "text": system_prompt,
-                "cache_control": {"type": "ephemeral"},  # This enables caching
+                "cache_control": {
+                    "type": "ephemeral",
+                    # "ttl": "1h"
+                },
             }
         ],
         messages=[
@@ -122,15 +122,12 @@ def build_dynamic_user_prompt(
     level: DeutschLevel,
     tense: DeutschTense,
     sentence_type: SentenceType,
-    previous_sentences: list[Sentence],
     optional_constraint: str | None,
 ) -> tuple[str, dict[str, Any]]:
-    previous_sentences = [s.ukrainian_sentence for s in previous_sentences]
     params = {
         "level": level.value,
         "tense": tense.value,
         "sentence_type": sentence_type.value,
-        "previous_sentences": "\n".join(previous_sentences),
         "optional_constraint": optional_constraint or "",
     }
     prompt = get_sentence_generator_message_template() % params
