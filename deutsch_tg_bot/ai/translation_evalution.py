@@ -71,6 +71,15 @@ async def check_translation(
     rprint(Panel(panel_group, title="Translation Evaluation", border_style="blue"))
 
     completion = message.content[0].text.strip()
+    # rprint(
+    #     Panel(
+    #         Markdown(completion),
+    #         title="Translation Evaluation",
+    #         subtitle="full response",
+    #         border_style="blue"
+    #     )
+    # )
+
     messages.append({"role": "assistant", "content": completion})
 
     correct_translation = extract_tag_content(completion, "correct_translation")
