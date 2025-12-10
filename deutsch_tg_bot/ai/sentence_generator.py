@@ -1,10 +1,12 @@
 import random
+import re
 import time
 from functools import cache
 from itertools import cycle
-from typing import Any
+from typing import Any, TypedDict
 
 import anthropic
+from httpx import get
 from rich import print as rprint
 from rich.console import Group
 from rich.markdown import Markdown
@@ -34,21 +36,41 @@ ANTHROPIC_MODEL = "claude-haiku-4-5"
 _times = []
 
 
-async def generate_sentence(level: DeutschLevel, optional_constraint: str | None) -> Sentence:
-    tense = get_random_tense_for_level(level)
-    sentence_type = get_random_sentence_type()
+class SentenceGeneratorParams(TypedDict):
+    level: DeutschLevel
+    tense: DeutschTense
+    sentence_type: SentenceType
+    optional_constraint: str | None
+    sentence_theme: str | None
+    sentence_theme_topic: str | None
 
-    if settings.MOCK_AI:
-        rprint("[yellow]Using MOCK_AI mode - returning mocked sentence[/yellow]")
-        return get_mocked_sentence(level, tense)
+
+def get_sentence_generator_params(
+    level: DeutschLevel, optional_constraint: str | None
+) -> SentenceGeneratorParams:
+    user_prompt_params: SentenceGeneratorParams = {
+        "level": level,
+        "tense": get_random_tense_for_level(level),
+        "sentence_type": get_random_sentence_type(),
+        "optional_constraint": optional_constraint,
+        "sentence_theme": None,
+        "sentence_theme_topic": None,
+    }
+
+    if optional_constraint is None:
+        user_prompt_params["sentence_theme_topic"], user_prompt_params["sentence_theme"] = (
+            get_random_sentence_theme()
+        )
+    return user_prompt_params
+
+
+async def generate_sentence(user_prompt_params: SentenceGeneratorParams) -> Sentence:
+    # if settings.MOCK_AI:
+    #     rprint("[yellow]Using MOCK_AI mode - returning mocked sentence[/yellow]")
+    #     return get_mocked_sentence(level, tense)
 
     system_prompt = get_sentence_generator_system_prompt()
-    user_prompt, prompt_params = build_dynamic_user_prompt(
-        level=level,
-        tense=tense,
-        sentence_type=sentence_type,
-        optional_constraint=optional_constraint,
-    )
+    user_prompt = get_sentence_generator_message_template() % user_prompt_params
 
     start_time = time.time()
     message = await anthropic_client.messages.create(
@@ -73,7 +95,7 @@ async def generate_sentence(level: DeutschLevel, optional_constraint: str | None
 
     _times.append(time.time() - start_time)
     average_time = sum(_times) / len(_times)
-    panel_group = Group(
+    group_panels = [
         Panel(
             Markdown(
                 f"- Model: {ANTHROPIC_MODEL}\n"
@@ -81,29 +103,31 @@ async def generate_sentence(level: DeutschLevel, optional_constraint: str | None
                 f"- Average time: {average_time:.2f} seconds\n",
             )
         ),
-        Panel(Pretty(prompt_params, expand_all=True), title="Prompt Parameters"),
-        Panel(Pretty(message.usage, expand_all=True), title="AI Usage"),
-    )
-    rprint(Panel(panel_group, title="Sentence Generation", border_style="green"))
+        Panel(Pretty(user_prompt_params, expand_all=True), title="Prompt Parameters"),
+    ]
+    if settings.SHOW_TOCKENS_USAGE:
+        group_panels.append(Panel(Pretty(message.usage, expand_all=True), title="AI Usage"))
 
     completion = message.content[0].text.strip()
-    # rprint(
-    #     Panel(
-    #         Markdown(completion),
-    #         title="Generated Sentence",
-    #         subtitle="full response",
-    #         border_style="green"
-    #     )
-    # )
+
+    if settings.SHOW_FULL_AI_RESPONSE:
+        group_panels.append(
+            Panel(
+                Markdown(completion),
+                title="Full AI Response",
+            )
+        )
+
+    rprint(Panel(Group(*group_panels), title="Sentence Generation", border_style="green"))
 
     ukrainian_sentence = extract_tag_content(completion, "ukrainian_sentence")
     german_sentence = extract_tag_content(completion, "german_sentence")
     return Sentence(
-        sentence_type=sentence_type,
+        sentence_type=user_prompt_params["sentence_type"],
         ukrainian_sentence=ukrainian_sentence,
         german_sentence=german_sentence,
-        tense=tense,
-        level=level,
+        tense=user_prompt_params["tense"],
+        level=user_prompt_params["level"],
     )
 
 
@@ -118,20 +142,10 @@ def get_random_sentence_type() -> SentenceType:
     return random.choices(sentence_types, weights=probabilities, k=1)[0]
 
 
-def build_dynamic_user_prompt(
-    level: DeutschLevel,
-    tense: DeutschTense,
-    sentence_type: SentenceType,
-    optional_constraint: str | None,
-) -> tuple[str, dict[str, Any]]:
-    params = {
-        "level": level.value,
-        "tense": tense.value,
-        "sentence_type": sentence_type.value,
-        "optional_constraint": optional_constraint or "",
-    }
-    prompt = get_sentence_generator_message_template() % params
-    return prompt, params
+def get_random_sentence_theme() -> tuple[str, str]:
+    sentence_themes = get_sentence_themes()
+    key = random.choice(list(sentence_themes.keys()))
+    return key, sentence_themes[key]
 
 
 @cache
@@ -142,6 +156,21 @@ def get_sentence_generator_message_template() -> str:
 @cache
 def get_sentence_generator_system_prompt() -> str:
     return load_prompt_template_from_file("generate_sentence_system.txt")
+
+
+@cache
+def get_sentence_themes() -> dict[str, str]:
+    sentence_themes_str = load_prompt_template_from_file("sentence_themes.txt")
+    sentence_themes_list = sentence_themes_str.split("\n\n")
+    sentence_themes_list = [s.strip() for s in sentence_themes_list if s.strip()]
+    key_parser_re = re.compile(r"^\*\*(.+?)\*\*")
+    sentence_themes_dict = {}
+    for theme_str in sentence_themes_list:
+        match = key_parser_re.match(theme_str)
+        if match:
+            key = match.group(1).replace("_", " ")
+            sentence_themes_dict[key] = theme_str
+    return sentence_themes_dict
 
 
 async def get_system_prompt_token_count() -> dict[str, Any]:

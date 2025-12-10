@@ -1,0 +1,191 @@
+**daily_routine** - Morning/evening routines, daily habits, personal care activities
+- Context: Home setting, family members, personal items, routine actions
+- Examples: brushing teeth, getting dressed, eating breakfast, going to bed
+
+**family_time** - Family interactions, relationships, shared activities
+- Context: Home/outdoor family settings, family members of different ages, family activities
+- Examples: playing together, family meals, helping each other, family celebrations
+
+**shopping** - Purchasing items, market/store interactions, consumer activities
+- Context: Shops/markets, customers/sellers, various products, buying/selling actions
+- Examples: buying groceries, choosing clothes, asking for prices, paying for items
+
+**food_cooking** - Food preparation, kitchen activities, meals, eating
+- Context: Kitchen/restaurant settings, cooking utensils, ingredients, food-related actions
+- Examples: cooking dinner, baking bread, cutting vegetables, tasting food
+
+**school_education** - Learning activities, school life, academic tasks
+- Context: School/university settings, students/teachers, educational materials, learning actions
+- Examples: reading books, writing homework, asking questions, taking exams
+
+**work_profession** - Professional activities, workplace interactions, job tasks
+- Context: Office/workplace settings, colleagues/professionals, work tools, professional actions
+- Examples: working on computer, meeting with clients, completing projects, organizing documents
+
+**travel_transport** - Transportation, traveling, moving from place to place
+- Context: Transportation hubs, travelers, vehicles/luggage, movement actions
+- Examples: taking the bus, packing suitcase, buying tickets, arriving at destination
+
+**hobbies_leisure** - Free time activities, personal interests, recreational pursuits
+- Context: Various recreational settings, hobbyists, hobby equipment, leisure actions
+- Examples: playing music, reading books, doing sports, watching movies
+
+**health_body** - Health-related activities, body care, medical situations
+- Context: Home/medical settings, patients/doctors, health items, care actions
+- Examples: feeling sick, taking medicine, visiting doctor, exercising
+
+**nature_outdoors** - Outdoor activities, natural settings, environmental interactions
+- Context: Parks/gardens/nature, people enjoying outdoors, natural objects, outdoor actions
+- Examples: walking in park, planting flowers, enjoying sunshine, feeding birds
+
+**technology_digital** - Using devices, internet activities, digital communication
+- Context: Home/office settings, various devices, digital platforms, tech interactions
+- Examples: sending emails, browsing social media, video calling, fixing computer
+
+**weather_seasons** - Weather-related activities, seasonal changes, climate responses
+- Context: Indoor/outdoor settings, various weather conditions, seasonal items, weather-related actions
+- Examples: checking forecast, wearing coat, enjoying sunny day, preparing for rain
+
+**entertainment_media** - Watching shows, listening to music, media consumption
+- Context: Home entertainment areas, various media devices, entertainment content
+- Examples: watching TV series, listening to podcast, going to cinema, playing video games
+
+**friendship_social** - Social interactions, maintaining friendships, social gatherings
+- Context: Social venues, friends groups, social activities, relationship interactions
+- Examples: meeting friends, having conversations, celebrating birthdays, making plans
+
+**sports_fitness** - Physical activities, exercise, competitive sports
+- Context: Gyms/sports facilities, athletes/fitness enthusiasts, sports equipment
+- Examples: playing football, going to gym, running marathon, stretching muscles
+
+**art_creativity** - Creative activities, artistic expression, cultural pursuits
+- Context: Art studios/galleries, artists, art materials, creative processes
+- Examples: painting picture, writing poetry, taking photos, designing graphics
+
+**home_living** - Household activities, home maintenance, domestic life
+- Context: Various rooms in house, household items, maintenance tools
+- Examples: cleaning windows, decorating room, fixing furniture, organizing closet
+
+**money_finance** - Financial activities, money management, economic decisions
+- Context: Banks/financial institutions, financial documents, money-related tools
+- Examples: saving money, paying bills, checking bank account, investing funds
+
+**communication** - Talking, messaging, expressing ideas, language use
+- Context: Various communication settings, communication devices, conversation partners
+- Examples: making phone call, writing letter, giving speech, learning language
+
+**clothing_fashion** - Dressing, fashion choices, clothing care, style decisions
+- Context: Wardrobe/clothing stores, fashion items, styling tools
+- Examples: choosing outfit, trying on shoes, washing clothes, buying accessories
+
+**pets_animals** - Pet care, animal interactions, wildlife observations
+- Context: Homes with pets, animal environments, pet care items
+- Examples: feeding cat, walking dog, visiting zoo, watching birds
+
+**repair_maintenance** - Fixing things, maintenance work, DIY projects
+- Context: Workshops/garages, repair tools, broken items, maintenance areas
+- Examples: fixing bicycle, changing light bulb, painting fence, assembling furniture
+
+**celebration_events** - Parties, special occasions, ceremonial activities
+- Context: Event venues, celebration decorations, party supplies, festive atmospheres
+- Examples: organizing wedding, celebrating graduation, throwing surprise party, decorating for holiday
+
+**music_instruments** - Playing music, musical activities, sound-related pursuits
+- Context: Music rooms/studios, musical instruments, sheet music, performance spaces
+- Examples: playing piano, singing songs, recording music, tuning guitar
+
+**gardening_plants** - Plant care, gardening activities, botanical interests
+- Context: Gardens/greenhouses, plants, gardening tools, growing spaces
+- Examples: watering flowers, planting seeds, pruning trees, harvesting vegetables
+
+**books_reading** - Reading activities, literary pursuits, knowledge seeking
+- Context: Libraries/bookstores, books, reading spaces, study materials
+- Examples: reading novel, studying textbook, visiting library, writing book review
+
+**games_puzzles** - Playing games, solving puzzles, competitive activities
+- Context: Game rooms/spaces, board games, puzzle pieces, gaming equipment
+- Examples: playing chess, solving crossword, building puzzle, playing cards
+
+**cleaning_organization** - Tidying up, organizing spaces, maintaining cleanliness
+- Context: Various living spaces, cleaning supplies, storage solutions
+- Examples: vacuuming carpet, organizing desk, washing dishes, decluttering room
+
+**safety_security** - Safety measures, security activities, protective behaviors
+- Context: Various environments requiring safety, safety equipment, security systems
+- Examples: wearing helmet, locking door, checking smoke alarm, following safety rules
+
+**emotions_feelings** - Expressing emotions, dealing with feelings, emotional situations
+- Context: Various emotional settings, people experiencing emotions, emotional triggers
+- Examples: feeling happy, crying tears, laughing loudly, expressing anger
+
+**community_neighborhood** - Local community activities, neighborhood interactions, civic engagement
+- Context: Neighborhood settings, community centers, local events, civic spaces
+- Examples: attending town meeting, helping neighbors, participating in local festival, volunteering
+
+**science_research** - Scientific activities, research work, laboratory experiments
+- Context: Labs/research facilities, scientific equipment, research materials
+- Examples: conducting experiment, analyzing data, studying microscope, writing research paper
+
+**environment_ecology** - Environmental activities, ecological awareness, conservation efforts
+- Context: Natural environments, conservation areas, environmental tools
+- Examples: recycling waste, saving water, protecting wildlife, planting trees
+
+**legal_official** - Legal matters, official procedures, bureaucratic activities
+- Context: Government buildings, legal documents, official procedures
+- Examples: signing contract, applying for permit, attending court, filling forms
+
+**elderly_care** - Caring for elderly, age-related activities, senior interactions
+- Context: Senior care facilities, elderly people, care equipment, assistance activities
+- Examples: helping grandparents, visiting nursing home, reading to elderly, providing support
+
+**children_parenting** - Child care, parenting activities, child development
+- Context: Child-friendly environments, parenting tools, educational toys
+- Examples: changing diaper, reading bedtime story, teaching child, playing with toys
+
+**photography_visual** - Taking photos, visual documentation, image creation
+- Context: Photography locations, cameras, visual subjects, photo equipment
+- Examples: taking selfie, editing photos, filming video, capturing sunset
+
+**construction_building** - Building activities, construction work, structural projects
+- Context: Construction sites, building tools, construction materials
+- Examples: building house, laying bricks, measuring wood, operating machinery
+
+**agriculture_farming** - Farming activities, agricultural work, rural life
+- Context: Farms/fields, farm animals, agricultural equipment, rural settings
+- Examples: milking cows, harvesting crops, driving tractor, feeding chickens
+
+**emergency_crisis** - Emergency situations, crisis management, urgent responses
+- Context: Emergency scenes, first aid equipment, emergency services
+- Examples: calling ambulance, giving first aid, evacuating building, handling emergency
+
+**culture_tradition** - Cultural activities, traditional practices, heritage preservation
+- Context: Cultural venues, traditional items, cultural celebrations
+- Examples: learning folk dance, celebrating cultural festival, visiting museum, preserving traditions
+
+**mental_learning** - Mental activities, cognitive processes, learning strategies
+- Context: Learning environments, study materials, mental exercises
+- Examples: memorizing facts, solving problems, concentrating deeply, practicing skills
+
+**romance_dating** - Romantic activities, dating situations, relationship building
+- Context: Romantic settings, couples, romantic gestures, dating venues
+- Examples: having romantic dinner, going on first date, expressing love, giving flowers
+
+**crime_justice** - Crime-related situations, justice system, law enforcement
+- Context: Police stations, courtrooms, security settings, legal environments
+- Examples: reporting crime, investigating case, attending trial, following law
+
+**military_defense** - Military activities, defense operations, armed forces
+- Context: Military bases, military equipment, defense scenarios
+- Examples: training soldiers, defending territory, following orders, maintaining equipment
+
+**death_mourning** - Death-related situations, mourning processes, memorial activities
+- Context: Funeral homes, cemeteries, memorial services, grieving families
+- Examples: attending funeral, grieving loss, visiting grave, comforting bereaved
+
+**business_commerce** - Business activities, commercial operations, entrepreneurship
+- Context: Business environments, commercial tools, market settings
+- Examples: making deals, launching product, managing business, serving customers
+
+**politics_government** - Political activities, governmental processes, civic participation
+- Context: Government buildings, political events, civic spaces
+- Examples: voting election, attending rally, debating policy, serving public

@@ -1,4 +1,4 @@
-You are generating Ukrainian-German sentence pairs for a language learning Telegram bot that teaches German to Ukrainian speakers. Your task is to create exactly ONE Ukrainian sentence that users will translate into German as a learning exercise, along with the expected German translation for validating user responses.
+You are generating Ukrainian sentences for a language learning Telegram bot that teaches German to Ukrainian speakers. Your task is to create exactly ONE Ukrainian sentence that users will translate into German as a learning exercise.
 
 ## Requirements
 
@@ -11,7 +11,8 @@ Adjust complexity based on the specified German proficiency level:
 - **Grammar focus**: Present tense (Präsens) and perfect tense (Perfekt) with haben/sein, basic modal verbs (können/müssen/wollen), simple past of sein/haben (war/hatte)
 - **Case usage**: Clear nominative/accusative distinction, introduce basic dative with common prepositions (mit dem/in der)
 - **Sentence complexity**: 8-12 words maximum, may include one simple coordination with "und/aber"
-- **Declension practice**: **CRITICAL: Include exactly ONE adjective** in clear case contexts (dative: "mit der schönen Frau", accusative: "für den kleinen Jungen")
+- **Declension practice**: **CRITICAL: Include at least ONE adjective** in clear case contexts (dative: "mit der schönen Frau", accusative: "für den kleinen Jungen")
+- **Vocabulary diversity**: Actively use varied vocabulary from different semantic fields to avoid repetitive patterns. Rotate between different types of people, objects, locations, colors, and actions to ensure rich learning exposure.
 - **Topics**: Routine activities, simple past experiences, basic future plans, simple shopping scenarios, describing people and objects
 - **Avoid**: Complex temporal sequences, subjunctive mood, relative clauses
 
@@ -54,9 +55,16 @@ Construct your sentence to match the required `sentence_type`:
 
 ### Requirement 4: Optional Constraint Integration
 
-If an optional constraint is provided, construct your Ukrainian sentence so the German translation naturally incorporates the specified German word, phrase, or grammatical structure.
+If an `<optional_constraint>` is provided, construct your Ukrainian sentence so the German translation naturally incorporates the specified German word, phrase, or grammatical structure. The constraint should be integrated naturally without forcing awkward constructions.
 
 If no optional constraint is provided, you can ignore this requirement.
+
+### Requirement 5: Thematic Scenario (Optional)
+
+If a `sentence_theme` is provided, create your sentence within this logical thematic context.
+Each theme provides a coherent scenario with naturally related characters, settings, objects, and actions.
+
+If no theme is provided, create a sentence using diverse vocabulary without specific thematic constraints, ensuring variety in your word choices.
 
 ## Planning Process
 
@@ -66,43 +74,51 @@ Work through these steps inside your `<sentence_planning>` section:
 Based on the specified level, determine:
 - What vocabulary complexity is appropriate
 - What grammatical structures you will use
-- For A2: Confirm you will include exactly ONE adjective to teach declension
-- For B1/B2: Confirm you will use maximum 1 subordinate clause
+- **For A2**: Confirm you will include at least ONE adjective and plan for vocabulary diversity
+- **For B1/B2**: Confirm you will use maximum 1 subordinate clause
 - Be specific about your choices
 
-**Step 2: Map Tense Requirements**
+**Step 2: Apply Thematic Scenario** (if provided)
+If a sentence_theme is given:
+- Explain how you will create a logical scenario within this theme
+- Plan which characters, setting, objects, and actions naturally fit together in this context
+- Ensure the scenario makes realistic sense
+
+**Step 3: Map Tense Requirements**
 For the specified German tense:
 - Determine exactly what Ukrainian verb forms you will use
 - Explain how these Ukrainian forms will naturally map to the target German tense when translated
 
-**Step 3: Plan Sentence Type**
+**Step 4: Plan Sentence Type**
 For the required sentence type:
 - If affirmative: Plan a clear declarative statement structure
 - If interrogative: Decide on question type (yes/no, wh-question, etc.) and structure
 - If negative: Plan which negation words you'll use in Ukrainian and how they'll translate to German negation
 
-**Step 4: Plan Optional Constraint Integration** (if provided)
-If a constraint is provided:
+**Step 5: Plan Optional Constraint Integration** (if provided)
+If an `<optional_constraint>` is provided:
 - Explain exactly how it will appear in the German translation
 - Work backwards to plan how you will construct the Ukrainian sentence to achieve this naturally
+- Ensure the constraint fits logically with your chosen theme (if any)
 
 If no constraint is provided, note that this step does not apply.
 
-**Step 5: Draft Ukrainian Sentence and Generate German Translation**
-- Draft your Ukrainian sentence
-- Write out the complete German translation that you expect learners to produce
+**Step 6: Draft Ukrainian Sentence**
+- Draft your Ukrainian sentence ensuring it follows your thematic scenario (if any)
+- Ensure the sentence will produce the expected German translation with the target tense
 
-**Step 6: Verify Requirements**
+**Step 7: Verify Requirements**
 - Verify the proficiency level is appropriate for the vocabulary and structures used
-- **If the level is A2: Confirm there is exactly ONE adjective in your Ukrainian sentence**
-- **If the level is B1/B2: Confirm there is maximum 1 subordinate clause in your German translation**
-- Confirm your sentence matches the required sentence type (affirmative/interrogative/negative)
-- If a constraint was provided, verify it is naturally incorporated in the German translation
+- **If A2**: Confirm at least ONE adjective is present
+- **If B1/B2**: Confirm maximum 1 subordinate clause
+- Confirm sentence type matching (affirmative/interrogative/negative)
+- **Logic check**: Ensure your sentence makes realistic sense and avoids absurd combinations
+- If theme provided, verify the sentence fits logically within that thematic context
+- If constraint provided, verify natural incorporation
 
-**Step 7: Final Check**
-- Review your German translation one final time
-- Confirm it is grammatically correct, natural-sounding, and appropriate for the proficiency level
-- Confirm it represents the expected translation that learners should produce
+**Step 8: Final Check**
+- Review your Ukrainian sentence one final time
+- Confirm it will produce a grammatically correct, natural-sounding German translation appropriate for the proficiency level
 
 ## Output Format
 
@@ -110,12 +126,8 @@ Structure your response as follows:
 
 ```
 <sentence_planning>
-[Your planning following the 7 steps above. Keep this concise but thorough.]
+[Your planning following the 8 steps above. Keep this concise but thorough.]
 </sentence_planning>
-
-<german_sentence>
-[The expected German translation that learners should produce—nothing else]
-</german_sentence>
 
 <ukrainian_sentence>
 [Your final Ukrainian sentence only—nothing else]
@@ -123,8 +135,5 @@ Structure your response as follows:
 ```
 
 **CRITICAL**:
-- The `<german_sentence>` tags must contain ONLY the German sentence itself
 - The `<ukrainian_sentence>` tags must contain ONLY the Ukrainian sentence itself
 - Do not include any explanations, translations, notes, or additional text in these output tags
-
-Please proceed with generating your Ukrainian sentence and its expected German translation following all requirements and planning steps.

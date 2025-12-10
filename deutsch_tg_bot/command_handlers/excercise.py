@@ -10,6 +10,7 @@ from telegram.ext import (
 )
 
 from deutsch_tg_bot import ai
+from deutsch_tg_bot.ai.sentence_generator import SentenceGeneratorParams
 from deutsch_tg_bot.command_handlers.stop import stop_command
 from deutsch_tg_bot.config import settings
 from deutsch_tg_bot.tg_progress import progress
@@ -27,11 +28,14 @@ async def new_exercise(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
 
     user_session = cast(UserSession, context.user_data["session"])
 
-    async with progress(update, "Генерую нове речення"):
-        new_sentence = await ai.generate_sentence(
-            level=user_session.level,
-            optional_constraint=user_session.sentence_constraint,
-        )
+    sentence_generator_params = ai.get_sentence_generator_params(
+        level=user_session.level,
+        optional_constraint=user_session.sentence_constraint,
+    )
+
+    progress_message = get_new_sentence_progress_message(sentence_generator_params)
+    async with progress(update, progress_message):
+        new_sentence = await ai.generate_sentence(sentence_generator_params)
 
     user_session.sentences_history.append(new_sentence)
     sentence_number = len(user_session.sentences_history)
@@ -41,6 +45,13 @@ async def new_exercise(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     )
     await update.message.reply_text(message, parse_mode="Markdown")
     return CHECK_TRANSLATION
+
+
+def get_new_sentence_progress_message(sentence_generator_params: SentenceGeneratorParams) -> str:
+    topic = sentence_generator_params["sentence_theme_topic"]
+    if topic:
+        return f'Генерую речення на тему "{topic}"'
+    return "Генерую речення"
 
 
 async def check_translation(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:

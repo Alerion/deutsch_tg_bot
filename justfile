@@ -1,7 +1,7 @@
 check-code:
     pre-commit run --all-files
 
-commit:
+commit: check-code
     superclaude commit
 
 start:

@@ -38,17 +38,19 @@ async def answer_question(
         messages=messages,
     )
 
-    panel_group = Group(
+    group_panels = [
         Panel(
             Markdown(
                 f"- Model: {ANTHROPIC_MODEL}\n"
                 f"- Time taken: {time.time() - start_time:.2f} seconds\n",
                 f"- Messages sent: {len(messages)}",
             )
-        ),
-        Panel(Pretty(message.usage, expand_all=True), title="AI Usage"),
-    )
-    rprint(Panel(panel_group, title="Question Answering", border_style="grey70"))
+        )
+    ]
+    if settings.SHOW_TOCKENS_USAGE:
+        group_panels.append(Panel(Pretty(message.usage, expand_all=True), title="AI Usage"))
+
+    rprint(Panel(Group(*group_panels), title="Question Answering", border_style="grey70"))
 
     completion = message.content[0].text.strip()
     messages.append({"role": "assistant", "content": completion})

@@ -1,7 +1,6 @@
 import time
 from dataclasses import dataclass
 from functools import cache
-from typing import Any
 
 import anthropic
 from rich import print as rprint
@@ -36,10 +35,13 @@ async def check_translation(
     sentence: Sentence,
     user_translation: str,
 ) -> TranslationCheckResult:
-    evaluate_prompt, prompt_params = build_check_translation_prompt(
-        sentence=sentence,
-        user_translation=user_translation,
-    )
+    prompt_params = {
+        "ukrainian_sentence": sentence.ukrainian_sentence,
+        "level": sentence.level.value,
+        "tense": sentence.tense.value,
+        "user_translation": user_translation,
+    }
+    evaluate_prompt = get_translation_evaluation_prompt_template() % prompt_params
 
     messages = [{"role": "user", "content": evaluate_prompt}]
     if settings.MOCK_AI:
@@ -58,7 +60,7 @@ async def check_translation(
         ],
     )
 
-    panel_group = Group(
+    group_panels = [
         Panel(
             Markdown(
                 f"- Model: {ANTHROPIC_MODEL}\n"
@@ -66,19 +68,21 @@ async def check_translation(
             )
         ),
         Panel(Pretty(prompt_params, expand_all=True), title="Prompt Parameters"),
-        Panel(Pretty(message.usage, expand_all=True), title="AI Usage"),
-    )
-    rprint(Panel(panel_group, title="Translation Evaluation", border_style="blue"))
+    ]
+    if settings.SHOW_TOCKENS_USAGE:
+        group_panels.append(Panel(Pretty(message.usage, expand_all=True), title="AI Usage"))
 
     completion = message.content[0].text.strip()
-    # rprint(
-    #     Panel(
-    #         Markdown(completion),
-    #         title="Translation Evaluation",
-    #         subtitle="full response",
-    #         border_style="blue"
-    #     )
-    # )
+
+    if settings.SHOW_FULL_AI_RESPONSE:
+        group_panels.append(
+            Panel(
+                Markdown(completion),
+                title="Full AI Response",
+            )
+        )
+
+    rprint(Panel(Group(*group_panels), title="Translation Evaluation", border_style="blue"))
 
     messages.append({"role": "assistant", "content": completion})
 
@@ -89,21 +93,6 @@ async def check_translation(
         correct_translation=correct_translation,
         explanation=explanation,
     )
-
-
-def build_check_translation_prompt(
-    sentence: Sentence,
-    user_translation: str,
-) -> tuple[str, dict[str, Any]]:
-    params = {
-        "german_sentence": sentence.german_sentence,
-        "ukrainian_sentence": sentence.ukrainian_sentence,
-        "level": sentence.level.value,
-        "tense": sentence.tense.value,
-        "user_translation": user_translation,
-    }
-    prompt = get_translation_evaluation_prompt_template() % params
-    return prompt, params
 
 
 @cache

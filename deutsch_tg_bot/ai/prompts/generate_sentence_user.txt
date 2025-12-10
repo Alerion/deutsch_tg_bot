@@ -16,10 +16,14 @@ Here is the required sentence type:
 {{sentence_type}}
 </sentence_type>
 
-Here is an optional constraint :
+Here is an optional constraints :
 
 <optional_constraint>
 {{optional_constraint}}
 </optional_constraint>
 
-If provided, construct your sentence so the German translation naturally incorporates this specific word, phrase, or grammatical structure.
+<sentence_theme>
+{{sentence_theme}}
+</sentence_theme>
+
+Please proceed with generating your Ukrainian sentence and its expected German translation following all requirements and planning steps.

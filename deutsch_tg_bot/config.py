@@ -13,6 +13,8 @@ class Settings(BaseSettings):
 
     PREVIOUS_SENTENCES_NUMBER: int = 5
     MOCK_AI: bool = False
+    SHOW_TOCKENS_USAGE: bool = False
+    SHOW_FULL_AI_RESPONSE: bool = False
 
 
 settings = Settings()
