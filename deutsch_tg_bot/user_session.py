@@ -7,7 +7,6 @@ from deutsch_tg_bot.deutsh_enums import DeutschLevel, DeutschTense, SentenceType
 @dataclass
 class Sentence:
     sentence_type: SentenceType
-    german_sentence: str
     ukrainian_sentence: str
     level: DeutschLevel
     tense: DeutschTense
