@@ -12,7 +12,6 @@ from telegram.ext import (
 from deutsch_tg_bot import ai
 from deutsch_tg_bot.ai.sentence_generator import SentenceGeneratorParams
 from deutsch_tg_bot.command_handlers.stop import stop_command
-from deutsch_tg_bot.config import settings
 from deutsch_tg_bot.tg_progress import progress
 from deutsch_tg_bot.user_session import UserSession
 
@@ -65,7 +64,7 @@ async def check_translation(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     async with progress(update, "Перевіряю переклад"):
         check_result = await ai.check_translation(current_sentence, user_answer)
 
-    user_session.conversation_messages = check_result.messages
+    user_session.genai_chat = check_result.genai_chat
 
     corrected_sentence = translation_check_result_to_message(check_result)
     user_session.sentences_history[-1].is_translation_correct = corrected_sentence is None
@@ -100,11 +99,13 @@ async def answer_questions(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         raise ValueError("Expected a message in update")
 
     user_session = cast(UserSession, context.user_data["session"])
+    if user_session.genai_chat is None:
+        raise ValueError("Expected genai_chat to be initialized")
     user_question = update.message.text.strip()
 
     async with progress(update, "Думаю над відповідю"):
-        user_session.conversation_messages, ai_reply = await ai.answer_question(
-            user_session.conversation_messages,
+        ai_reply = await ai.answer_question(
+            user_session.genai_chat,
             user_question,
         )
 

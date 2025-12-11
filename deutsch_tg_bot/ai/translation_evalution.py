@@ -2,15 +2,15 @@ import time
 from dataclasses import dataclass
 from functools import cache
 
-import anthropic
+from google import genai
+from google.genai import chats
 from rich import print as rprint
 from rich.console import Group
 from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.pretty import Pretty
 
-from deutsch_tg_bot.ai.anthropic_utils import (
-    MessageDict,
+from deutsch_tg_bot.ai.prompt_utils import (
     extract_tag_content,
     load_prompt_template_from_file,
     replace_promt_placeholder,
@@ -18,15 +18,15 @@ from deutsch_tg_bot.ai.anthropic_utils import (
 from deutsch_tg_bot.config import settings
 from deutsch_tg_bot.user_session import Sentence
 
-anthropic_client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
+genai_client = genai.Client(api_key=settings.GOOGLE_API_KEY).aio
 
-# https://docs.anthropic.com/en/docs/about-claude/models/overview#model-names
-ANTHROPIC_MODEL = "claude-haiku-4-5"
+# GOOGLE_MODEL = "gemini-2.5-flash"
+GOOGLE_MODEL = "gemini-2.5-flash-lite"
 
 
 @dataclass
 class TranslationCheckResult:
-    messages: list[MessageDict]
+    genai_chat: chats.AsyncChat
     correct_translation: str | None = None
     explanation: str | None = None
 
@@ -43,53 +43,41 @@ async def check_translation(
     }
     evaluate_prompt = get_translation_evaluation_prompt_template() % prompt_params
 
-    messages = [{"role": "user", "content": evaluate_prompt}]
-    if settings.MOCK_AI:
-        return TranslationCheckResult(
-            messages=[*messages, {"role": "assistant", "content": "Все вірно."}],
-        )
-
     start_time = time.time()
-    message = await anthropic_client.messages.create(
-        model=ANTHROPIC_MODEL,
-        max_tokens=4000,
-        temperature=0.7,
-        messages=[
-            *messages,
-            {"role": "assistant", "content": "<analysis>"},
-        ],
-    )
+    genai_chat = genai_client.chats.create(model=GOOGLE_MODEL)
+    response = await genai_chat.send_message(evaluate_prompt)
+    usage = response.usage_metadata
+    ai_response = response.text.strip()
+
+    # response1 = await genai_chat.send_message("Поясни мені структуру речення.")
+    # print(response1.text.strip())
 
     group_panels = [
         Panel(
             Markdown(
-                f"- Model: {ANTHROPIC_MODEL}\n"
-                f"- Time taken: {time.time() - start_time:.2f} seconds\n"
+                f"- Model: {GOOGLE_MODEL}\n- Time taken: {time.time() - start_time:.2f} seconds\n"
             )
         ),
         Panel(Pretty(prompt_params, expand_all=True), title="Prompt Parameters"),
     ]
     if settings.SHOW_TOCKENS_USAGE:
-        group_panels.append(Panel(Pretty(message.usage, expand_all=True), title="AI Usage"))
-
-    completion = message.content[0].text.strip()
+        group_panels.append(Panel(Pretty(usage, expand_all=True), title="AI Usage"))
 
     if settings.SHOW_FULL_AI_RESPONSE:
+        print(ai_response)
         group_panels.append(
             Panel(
-                Markdown(completion),
+                Markdown(ai_response),
                 title="Full AI Response",
             )
         )
 
     rprint(Panel(Group(*group_panels), title="Translation Evaluation", border_style="blue"))
 
-    messages.append({"role": "assistant", "content": completion})
-
-    correct_translation = extract_tag_content(completion, "correct_translation")
-    explanation = extract_tag_content(completion, "explanation")
+    correct_translation = extract_tag_content(ai_response, "correct_translation")
+    explanation = extract_tag_content(ai_response, "explanation")
     return TranslationCheckResult(
-        messages=messages,
+        genai_chat=genai_chat,
         correct_translation=correct_translation,
         explanation=explanation,
     )

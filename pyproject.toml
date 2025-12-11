@@ -4,7 +4,6 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.14"
 dependencies = [
-    "anthropic~=0.74.0",
     "google-genai~=1.54.0",
     "pydantic-settings~=2.12.0",
     "python-telegram-bot~=22.5",
@@ -28,7 +27,7 @@ extend-exclude = []
 # Add the `line-too-long` rule to the enforced rule set. By default, Ruff omits rules that
 # overlap with the use of a formatter, like Black, but we can override this behavior by
 # explicitly adding the rule.
-extend-select = ["E501", "RUF100", "I"]
+extend-select = ["E501", "RUF100", "I", "F401"]
 
 [tool.ruff.lint.pycodestyle]
 max-line-length = 120

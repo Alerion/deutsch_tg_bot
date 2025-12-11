@@ -1,4 +1,3 @@
-import anthropic
 from rich import print as rprint
 from telegram import Update
 from telegram.ext import Application
@@ -6,13 +5,8 @@ from telegram.ext import Application
 from deutsch_tg_bot.command_handlers.training import training_handler
 from deutsch_tg_bot.config import settings
 
-anthropic_client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
-
 
 def start_bot() -> None:
-    if settings.MOCK_AI:
-        rprint("[yellow]Warning:[/yellow] MOCK_AI is enabled. Using mock AI responses.")
-
     application = Application.builder().token(settings.TELEGRAM_BOT_TOKEN).build()
     application.add_handler(training_handler)
     rprint("Witing for commands...")

@@ -1,11 +1,5 @@
 import os
 import re
-from typing import TypedDict
-
-
-class MessageDict(TypedDict):
-    role: str
-    content: str
 
 
 def replace_promt_placeholder(prompt: str) -> str:

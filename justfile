@@ -1,7 +1,9 @@
 check-code:
-    pre-commit run --all-files
+    uv run ruff format
+    uv run ruff check --fix
+    mypy
 
-commit: check-code
+commit:
     superclaude commit
 
 start:

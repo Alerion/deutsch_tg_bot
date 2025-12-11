@@ -5,7 +5,6 @@ from functools import cache
 from itertools import cycle
 from typing import Any, TypedDict
 
-import anthropic
 from google import genai
 from rich import print as rprint
 from rich.console import Group
@@ -13,12 +12,12 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.pretty import Pretty
 
-from deutsch_tg_bot.ai.anthropic_utils import (
+from deutsch_tg_bot.ai.prompt_utils import (
     extract_tag_content,
     load_prompt_template_from_file,
     replace_promt_placeholder,
 )
-from deutsch_tg_bot.config import AIProvider, settings
+from deutsch_tg_bot.config import settings
 from deutsch_tg_bot.deutsh_enums import (
     DEUTCH_LEVEL_TENSES,
     DeutschLevel,
@@ -28,11 +27,8 @@ from deutsch_tg_bot.deutsh_enums import (
 )
 from deutsch_tg_bot.user_session import Sentence
 
-anthropic_client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
 genai_client = genai.Client(api_key=settings.GOOGLE_API_KEY).aio
 
-# https://platform.claude.com/docs/en/api/messages#model
-ANTHROPIC_MODEL = "claude-haiku-4-5"
 # GOOGLE_MODEL = "gemini-2.5-flash"
 GOOGLE_MODEL = "gemini-2.5-flash-lite"
 
@@ -49,58 +45,26 @@ class SentenceGeneratorParams(TypedDict):
 
 
 async def generate_sentence(user_prompt_params: SentenceGeneratorParams) -> Sentence:
-    if settings.MOCK_AI:
-        rprint("[yellow]Using MOCK_AI mode - returning mocked sentence[/yellow]")
-        return get_mocked_sentence(user_prompt_params)
-
     system_prompt = get_sentence_generator_system_prompt()
     user_prompt = get_sentence_generator_message_template() % user_prompt_params
 
     start_time = time.time()
-    if settings.AI_PROVIDER == AIProvider.GOOGLE:
-        model = GOOGLE_MODEL
-        response = await genai_client.models.generate_content(
-            model=model,
-            config=genai.types.GenerateContentConfig(
-                system_instruction=system_prompt,
-            ),
-            contents=user_prompt,
-        )
-        usage = response.usage_metadata
-        ai_response = response.text.strip()
-    elif settings.AI_PROVIDER == AIProvider.ANTHROPIC:
-        model = ANTHROPIC_MODEL
-        message = await anthropic_client.messages.create(
-            model=model,
-            max_tokens=3000,
-            temperature=1.0,
-            system=[
-                {
-                    "type": "text",
-                    "text": system_prompt,
-                    "cache_control": {
-                        "type": "ephemeral",
-                        # "ttl": "1h"
-                    },
-                }
-            ],
-            messages=[
-                {"role": "user", "content": user_prompt},
-                {"role": "assistant", "content": "<sentence_planning>"},
-            ],
-        )
-        usage = message.usage
-        ai_response = message.content[0].text.strip()
-    else:
-        raise ValueError(f"Unsupported AI_PROVIDER: {settings.AI_PROVIDER}")
+    response = await genai_client.models.generate_content(
+        model=GOOGLE_MODEL,
+        config=genai.types.GenerateContentConfig(
+            system_instruction=system_prompt,
+        ),
+        contents=user_prompt,
+    )
+    usage = response.usage_metadata
+    ai_response = response.text.strip()
 
     _times.append(time.time() - start_time)
     average_time = sum(_times) / len(_times)
     group_panels = [
         Panel(
             Markdown(
-                f"- AI Provider: {settings.AI_PROVIDER.value}\n"
-                f"- Model: {model}\n"
+                f"- Model: {GOOGLE_MODEL}\n"
                 f"- Time taken: {_times[0]:.2f} seconds\n"
                 f"- Average time: {average_time:.2f} seconds\n",
             )
@@ -191,13 +155,8 @@ def get_sentence_themes() -> dict[str, str]:
 
 
 async def get_system_prompt_token_count() -> dict[str, Any]:
-    system_prompt = get_sentence_generator_system_prompt()
-    response = await anthropic_client.messages.count_tokens(
-        model=ANTHROPIC_MODEL,
-        system=system_prompt,
-        messages=[{"role": "user", "content": "Hello"}],
-    )
-    return response.model_dump_json()
+    # TODO
+    ...
 
 
 def get_mocked_sentence(user_prompt_params: SentenceGeneratorParams) -> Sentence:

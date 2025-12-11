@@ -5,6 +5,9 @@ from telegram import Update
 
 
 async def show_progress(update: Update, text: str) -> None:
+    if update.message is None:
+        return
+
     progress_message = await update.message.reply_text(f"_{text}_", parse_mode="Markdown")
     i = 0
     try:
