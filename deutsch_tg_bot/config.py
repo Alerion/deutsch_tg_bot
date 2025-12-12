@@ -15,5 +15,7 @@ class Settings(BaseSettings):
     SHOW_TOCKENS_USAGE: bool = False
     SHOW_FULL_AI_RESPONSE: bool = False
 
+    DEV_SKIP_SENTENCE_CONSTRAINT: bool = False
+
 
 settings = Settings()

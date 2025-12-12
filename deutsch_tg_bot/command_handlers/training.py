@@ -11,6 +11,7 @@ from telegram.ext import (
 
 from deutsch_tg_bot.command_handlers.excercise import excercise_handler
 from deutsch_tg_bot.command_handlers.stop import stop_command
+from deutsch_tg_bot.config import settings
 from deutsch_tg_bot.deutsh_enums import DeutschLevel
 from deutsch_tg_bot.user_session import UserSession
 
@@ -53,6 +54,10 @@ async def store_level(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
             reply_markup=_get_level_keyboard(),
         )
         return STORE_LEVEL
+
+    if settings.DEV_SKIP_SENTENCE_CONSTRAINT:
+        await update.message.reply_text("Введи /next, щоб отримати перше завдання.")
+        return NEW_EXERCISE
 
     await update.message.reply_text(
         f"Чудово! Твій рівень німецької встановлено на {user_session.level.value}.\n"
