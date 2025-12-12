@@ -5,7 +5,7 @@ from telegram.ext import (
 )
 
 
-async def stop_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def stop_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if update.message is None or update.message.text is None:
         raise ValueError("Expected a message in update")
 

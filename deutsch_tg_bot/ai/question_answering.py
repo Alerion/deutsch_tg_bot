@@ -17,7 +17,7 @@ async def answer_question(genai_chat: chats.AsyncChat, user_question: str) -> st
     start_time = time.time()
     response = await genai_chat.send_message(user_question)
     usage = response.usage_metadata
-    ai_response = response.text.strip()
+    ai_response = (response.text or "").strip()
 
     group_panels = [
         Panel(

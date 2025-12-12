@@ -32,7 +32,7 @@ genai_client = genai.Client(api_key=settings.GOOGLE_API_KEY).aio
 # GOOGLE_MODEL = "gemini-2.5-flash"
 GOOGLE_MODEL = "gemini-2.5-flash-lite"
 
-_times = []
+_times: list[float] = []
 
 
 class SentenceGeneratorParams(TypedDict):
@@ -57,7 +57,7 @@ async def generate_sentence(user_prompt_params: SentenceGeneratorParams) -> Sent
         contents=user_prompt,
     )
     usage = response.usage_metadata
-    ai_response = response.text.strip()
+    ai_response = (response.text or "").strip()
 
     _times.append(time.time() - start_time)
     average_time = sum(_times) / len(_times)
@@ -85,6 +85,8 @@ async def generate_sentence(user_prompt_params: SentenceGeneratorParams) -> Sent
     rprint(Panel(Group(*group_panels), title="Sentence Generation", border_style="green"))
 
     ukrainian_sentence = extract_tag_content(ai_response, "ukrainian_sentence")
+    if ukrainian_sentence is None:
+        raise ValueError("Failed to extract ukrainian_sentence from AI response")
     return Sentence(
         sentence_type=user_prompt_params["sentence_type"],
         ukrainian_sentence=ukrainian_sentence,
@@ -156,7 +158,7 @@ def get_sentence_themes() -> dict[str, str]:
 
 async def get_system_prompt_token_count() -> dict[str, Any]:
     # TODO
-    ...
+    return {}
 
 
 def get_mocked_sentence(user_prompt_params: SentenceGeneratorParams) -> Sentence:

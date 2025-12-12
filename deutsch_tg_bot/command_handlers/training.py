@@ -25,6 +25,8 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     if update.message is None or update.message.text is None:
         raise ValueError("Expected a message in update")
 
+    if context.user_data is None:
+        raise ValueError("Expected user_data in context")
     context.user_data["session"] = UserSession()
 
     await update.message.reply_text(
@@ -39,6 +41,8 @@ async def store_level(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
     if update.message is None or update.message.text is None:
         raise ValueError("Expected a message in update")
 
+    if context.user_data is None:
+        raise ValueError("Expected user_data in context")
     user_session = cast(UserSession, context.user_data["session"])
 
     try:
@@ -63,6 +67,8 @@ async def store_sentence_constraint(update: Update, context: ContextTypes.DEFAUL
     if update.message is None or update.message.text is None:
         raise ValueError("Expected a message in update")
 
+    if context.user_data is None:
+        raise ValueError("Expected user_data in context")
     user_session = cast(UserSession, context.user_data["session"])
     message_text = update.message.text.strip()
 

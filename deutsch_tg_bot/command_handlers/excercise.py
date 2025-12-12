@@ -25,7 +25,12 @@ async def new_exercise(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     if update.message is None or update.message.text is None:
         raise ValueError("Expected a message in update")
 
+    if context.user_data is None:
+        raise ValueError("Expected user_data in context")
     user_session = cast(UserSession, context.user_data["session"])
+
+    if user_session.level is None:
+        raise ValueError("Expected level in user_session")
 
     sentence_generator_params = ai.get_sentence_generator_params(
         level=user_session.level,
@@ -57,6 +62,8 @@ async def check_translation(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     if update.message is None or update.message.text is None:
         raise ValueError("Expected a message in update")
 
+    if context.user_data is None:
+        raise ValueError("Expected user_data in context")
     user_session = cast(UserSession, context.user_data["session"])
     current_sentence = user_session.sentences_history[-1]
     user_answer = update.message.text
@@ -98,6 +105,8 @@ async def answer_questions(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     if update.message is None or update.message.text is None:
         raise ValueError("Expected a message in update")
 
+    if context.user_data is None:
+        raise ValueError("Expected user_data in context")
     user_session = cast(UserSession, context.user_data["session"])
     if user_session.genai_chat is None:
         raise ValueError("Expected genai_chat to be initialized")

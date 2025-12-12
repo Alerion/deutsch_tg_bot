@@ -47,7 +47,7 @@ async def check_translation(
     genai_chat = genai_client.chats.create(model=GOOGLE_MODEL)
     response = await genai_chat.send_message(evaluate_prompt)
     usage = response.usage_metadata
-    ai_response = response.text.strip()
+    ai_response = (response.text or "").strip()
 
     # response1 = await genai_chat.send_message("Поясни мені структуру речення.")
     # print(response1.text.strip())

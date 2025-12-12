@@ -1,4 +1,5 @@
 import asyncio
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from telegram import Update
@@ -22,15 +23,16 @@ async def show_progress(update: Update, text: str) -> None:
 
 
 @asynccontextmanager
-async def progress(update: Update, text: str):
+async def progress(update: Update, text: str) -> AsyncGenerator[None, None]:
     task = asyncio.create_task(show_progress(update, text))
     try:
         yield
     except Exception as e:
         task.cancel()
-        await update.message.reply_text(
-            "Вибач, сталася помилка під час обробки твого запиту. Спробуй ще раз пізніше."
-        )
+        if update.message is not None:
+            await update.message.reply_text(
+                "Вибач, сталася помилка під час обробки твого запиту. Спробуй ще раз пізніше."
+            )
         raise e
     finally:
         task.cancel()
