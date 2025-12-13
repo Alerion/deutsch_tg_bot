@@ -13,4 +13,6 @@ Format and check code:
     just check-code
 
 
-Use https://core.telegram.org/api/entities#allowed-entities instead of Markdown
+Notes:
+
+Valid Telegram HTML entities https://core.telegram.org/api/entities#allowed-entities

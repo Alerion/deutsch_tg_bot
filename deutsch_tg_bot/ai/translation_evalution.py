@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from functools import cache
 
 from google import genai
-from google.genai import chats
 from rich import print as rprint
 from rich.console import Group
 from rich.markdown import Markdown
@@ -16,7 +15,7 @@ from deutsch_tg_bot.ai.prompt_utils import (
     replace_promt_placeholder,
 )
 from deutsch_tg_bot.config import settings
-from deutsch_tg_bot.user_session import Sentence
+from deutsch_tg_bot.data_types import Sentence
 
 genai_client = genai.Client(api_key=settings.GOOGLE_API_KEY).aio
 
@@ -26,12 +25,12 @@ GOOGLE_MODEL = "gemini-2.5-flash-lite"
 
 @dataclass
 class TranslationCheckResult:
-    genai_chat: chats.AsyncChat
+    evaluation_results: str
     correct_translation: str | None = None
     explanation: str | None = None
 
 
-async def check_translation(
+async def evaluate_translation_with_ai(
     sentence: Sentence,
     user_translation: str,
 ) -> TranslationCheckResult:
@@ -44,13 +43,13 @@ async def check_translation(
     evaluate_prompt = get_translation_evaluation_prompt_template() % prompt_params
 
     start_time = time.time()
-    genai_chat = genai_client.chats.create(model=GOOGLE_MODEL)
-    response = await genai_chat.send_message(evaluate_prompt)
+    response = await genai_client.models.generate_content(
+        model=GOOGLE_MODEL,
+        contents=evaluate_prompt,
+    )
+
     usage = response.usage_metadata
     ai_response = (response.text or "").strip()
-
-    # response1 = await genai_chat.send_message("Поясни мені структуру речення.")
-    # print(response1.text.strip())
 
     group_panels = [
         Panel(
@@ -77,7 +76,7 @@ async def check_translation(
     correct_translation = extract_tag_content(ai_response, "correct_translation")
     explanation = extract_tag_content(ai_response, "explanation")
     return TranslationCheckResult(
-        genai_chat=genai_chat,
+        evaluation_results=ai_response,
         correct_translation=correct_translation,
         explanation=explanation,
     )

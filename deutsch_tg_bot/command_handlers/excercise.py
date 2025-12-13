@@ -9,8 +9,16 @@ from telegram.ext import (
     filters,
 )
 
-from deutsch_tg_bot import ai
-from deutsch_tg_bot.ai.sentence_generator import SentenceGeneratorParams
+from deutsch_tg_bot.ai.question_answering import answer_question_with_ai
+from deutsch_tg_bot.ai.sentence_generator import (
+    SentenceGeneratorParams,
+    generate_sentence_with_ai,
+    get_sentence_generator_params,
+)
+from deutsch_tg_bot.ai.translation_evalution import (
+    TranslationCheckResult,
+    evaluate_translation_with_ai,
+)
 from deutsch_tg_bot.command_handlers.stop import stop_command
 from deutsch_tg_bot.tg_progress import progress
 from deutsch_tg_bot.user_session import UserSession
@@ -32,14 +40,14 @@ async def new_exercise(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     if user_session.level is None:
         raise ValueError("Expected level in user_session")
 
-    sentence_generator_params = ai.get_sentence_generator_params(
+    sentence_generator_params = get_sentence_generator_params(
         level=user_session.level,
         optional_constraint=user_session.sentence_constraint,
     )
 
     progress_message = get_new_sentence_progress_message(sentence_generator_params)
     async with progress(update, progress_message):
-        new_sentence = await ai.generate_sentence(sentence_generator_params)
+        new_sentence = await generate_sentence_with_ai(sentence_generator_params)
 
     user_session.sentences_history.append(new_sentence)
     sentence_number = len(user_session.sentences_history)
@@ -70,9 +78,9 @@ async def check_translation(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     user_answer = update.message.text
 
     async with progress(update, "Перевіряю переклад"):
-        check_result = await ai.check_translation(current_sentence, user_answer)
+        check_result = await evaluate_translation_with_ai(current_sentence, user_answer)
 
-    user_session.genai_chat = check_result.genai_chat
+    user_session.last_translation_check_result = check_result
 
     corrected_sentence = translation_check_result_to_message(check_result)
     user_session.sentences_history[-1].is_translation_correct = corrected_sentence is None
@@ -111,15 +119,19 @@ async def answer_questions(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         raise ValueError("Expected user_data in context")
 
     user_session = cast(UserSession, context.user_data["session"])
-    if user_session.genai_chat is None:
-        raise ValueError("Expected genai_chat to be initialized")
+    if user_session.last_translation_check_result is None:
+        raise ValueError("Expected last_translation_check_result to be initialized")
 
     user_question = update.message.text.strip()
 
+    current_sentence = user_session.sentences_history[-1]
+
     async with progress(update, "Думаю над відповідю"):
-        ai_reply = await ai.answer_question(
-            user_session.genai_chat,
+        ai_reply, user_session.genai_chat = await answer_question_with_ai(
             user_question,
+            current_sentence,
+            user_session.last_translation_check_result,
+            user_session.genai_chat,
         )
 
     message = (
@@ -145,7 +157,7 @@ excercise_handler = ConversationHandler(
 
 
 def translation_check_result_to_message(
-    translation_check_result: ai.TranslationCheckResult,
+    translation_check_result: TranslationCheckResult,
 ) -> str | None:
     if translation_check_result.correct_translation is None:
         return None

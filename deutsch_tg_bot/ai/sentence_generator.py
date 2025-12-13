@@ -18,6 +18,7 @@ from deutsch_tg_bot.ai.prompt_utils import (
     replace_promt_placeholder,
 )
 from deutsch_tg_bot.config import settings
+from deutsch_tg_bot.data_types import Sentence
 from deutsch_tg_bot.deutsh_enums import (
     DEUTCH_LEVEL_TENSES,
     DeutschLevel,
@@ -25,7 +26,6 @@ from deutsch_tg_bot.deutsh_enums import (
     SentenceType,
     SentenceTypeProbabilities,
 )
-from deutsch_tg_bot.user_session import Sentence
 
 genai_client = genai.Client(api_key=settings.GOOGLE_API_KEY).aio
 
@@ -44,7 +44,7 @@ class SentenceGeneratorParams(TypedDict):
     sentence_theme_topic: str | None
 
 
-async def generate_sentence(user_prompt_params: SentenceGeneratorParams) -> Sentence:
+async def generate_sentence_with_ai(user_prompt_params: SentenceGeneratorParams) -> Sentence:
     system_prompt = get_sentence_generator_system_prompt()
     user_prompt = get_sentence_generator_message_template() % user_prompt_params
 
