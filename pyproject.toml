@@ -14,6 +14,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "icecream~=2.1.0",
     "mypy==1.18.2",
     "pre-commit~=4.4.0",
     "ruff~=0.14.0",

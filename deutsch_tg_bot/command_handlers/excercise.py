@@ -44,10 +44,10 @@ async def new_exercise(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     user_session.sentences_history.append(new_sentence)
     sentence_number = len(user_session.sentences_history)
     message = (
-        f"*{sentence_number}. Переклади речення:*\n{new_sentence.ukrainian_sentence}\n\n"
-        f"*Час*: {new_sentence.tense.value}"
+        f"<b>{sentence_number}. Переклади речення:</b>\n{new_sentence.ukrainian_sentence}\n\n"
+        f"<b>Час</b>: {new_sentence.tense.value}"
     )
-    await update.message.reply_text(message, parse_mode="Markdown")
+    await update.message.reply_text(message, parse_mode="HTML")
     return CHECK_TRANSLATION
 
 
@@ -64,6 +64,7 @@ async def check_translation(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 
     if context.user_data is None:
         raise ValueError("Expected user_data in context")
+
     user_session = cast(UserSession, context.user_data["session"])
     current_sentence = user_session.sentences_history[-1]
     user_answer = update.message.text
@@ -80,7 +81,8 @@ async def check_translation(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         1 for sentence in user_session.sentences_history if sentence.is_translation_correct is True
     )
     total_result_message = (
-        f"*Загальний результат:* {correct_answers_number} з {len(user_session.sentences_history)}"
+        f"<b>Загальний результат:</b> {correct_answers_number}"
+        f" з {len(user_session.sentences_history)}"
     )
 
     if corrected_sentence is None:
@@ -96,7 +98,7 @@ async def check_translation(update: Update, context: ContextTypes.DEFAULT_TYPE) 
             "Якщо у тебе є ще питання, задай їх. Або введи /next для наступного речення."
         )
 
-    await update.message.reply_text(message, parse_mode="Markdown")
+    await update.message.reply_text(message, parse_mode="HTML")
 
     return ANSWER_QUESTION
 
@@ -107,9 +109,11 @@ async def answer_questions(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
     if context.user_data is None:
         raise ValueError("Expected user_data in context")
+
     user_session = cast(UserSession, context.user_data["session"])
     if user_session.genai_chat is None:
         raise ValueError("Expected genai_chat to be initialized")
+
     user_question = update.message.text.strip()
 
     async with progress(update, "Думаю над відповідю"):
@@ -118,11 +122,11 @@ async def answer_questions(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             user_question,
         )
 
-    reply_message = (
+    message = (
         f"{ai_reply}\n\nЯкщо у тебе є ще питання, задай їх. Або введи /next для наступного речення."
     )
 
-    await update.message.reply_text(reply_message, parse_mode="Markdown")
+    await update.message.reply_text(message, parse_mode="HTML")
     return ANSWER_QUESTION
 
 
@@ -147,8 +151,8 @@ def translation_check_result_to_message(
         return None
 
     correct_translation = translation_check_result.correct_translation
-    correct_translation = correct_translation.replace("<error>", "*").replace("</error>", "*")
+    # correct_translation = correct_translation.replace("<error>", "*").replace("</error>", "*")
 
-    message = f"\n\n*Правильний переклад:*\n{correct_translation}"
-    message += f"\n\n*Пояснення:*\n{translation_check_result.explanation}"
+    message = f"\n\n<b>Правильний переклад:</b>\n{correct_translation}"
+    message += f"\n\n<b>Пояснення:</b>\n{translation_check_result.explanation}"
     return message

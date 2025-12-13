@@ -11,3 +11,6 @@ Install pre-commit hooks:
 Format and check code:
 
     just check-code
+
+
+Use https://core.telegram.org/api/entities#allowed-entities instead of Markdown

@@ -171,25 +171,26 @@ Provide no output after closing your `</analysis>` tag. The translation needs no
 Provide the following structure after closing your `</analysis>` tag:
 
 ```
-<correct_translation>[Write the correct German sentence here. Wrap corrected, added, or improved portions in <error> tags. Show the CORRECT form inside the tags, not the student's mistake.]</correct_translation>
-<explanation>[Write a concise explanation in Ukrainian using German grammatical terminology. State only what was corrected and why using specific grammatical terms. Adjust the level of detail based on the student's proficiency level. Do not repeat the correct translation. Do not include example sentences. Be direct and concrete.]</explanation>
+<correct_translation>[Write the correct German sentence here using Telegram HTML formatting. Wrap corrected, added, or improved portions in <b> tags. Show the CORRECT form inside the tags, not the student's mistake.]</correct_translation>
+<explanation>[Write a concise explanation in Ukrainian using German grammatical terminology and Telegram HTML formatting for emphasis. State only what was corrected and why using specific grammatical terms. Adjust the level of detail based on the student's proficiency level. Do not repeat the correct translation. Do not include example sentences. Be direct and concrete.]</explanation>
 ```
 
-### Guidelines for Error Marking
+### Guidelines for Error Marking in <correct_translation>
 
-- Wrap corrected words, added missing words, or improved phrasings in `<error>` tags
+- Wrap corrected words, added missing words, or improved phrasings in `<b>` tags (Telegram HTML bold formatting)
 - Show the CORRECT form inside the tags, not the student's mistake
 - Mark each separate correction individually
 
 **Examples of error marking:**
-- If student wrote "Ich habe gegangen" and should be "Ich bin gegangen", show: `Ich <error>bin gegangen</error>`
-- If student omitted a word, show it in tags: `Ich gehe <error>in die</error> Schule`
-- If a subordinate clause needs correction: `Er sagte, dass er <error>kommen würde</error>`
+- If student wrote "Ich habe gegangen" and should be "Ich bin gegangen", show: `Ich <b>bin gegangen</b>`
+- If student omitted a word, show it in tags: `Ich gehe <b>in die</b> Schule`
+- If a subordinate clause needs correction: `Er sagte, dass er <b>kommen würde</b>`
 
 ### Guidelines for Explanations
 
 - ALWAYS provide an explanation when showing corrections
 - Write all explanation text in Ukrainian
+- Use Telegram HTML formatting for emphasis: `<b>German grammatical terms</b>`, `<i>Ukrainian terms</i>`, `<code>specific forms</code>`
 - Use German grammatical terms: Akkusativ, Dativ, Genitiv, Nominativ, Perfekt, Präteritum, Präsens, Futur, Konjunktiv I, Konjunktiv II, trennbares Verb, Hilfsverb, Nebensatz, Hauptsatz, Zeitenfolge, bestimmter Artikel, unbestimmter Artikel, etc.
 - Adjust explanation complexity based on proficiency level
 - Be CONCISE and CONCRETE - state only essential information
@@ -202,8 +203,8 @@ Provide the following structure after closing your `</analysis>` tag:
 Here is a generic example showing the structure when corrections are needed:
 
 ```
-<correct_translation>[Correct sentence structure] <error>[corrected element]</error> [rest of sentence] <error>[another corrected element]</error>.</correct_translation>
-<explanation>[Ukrainian explanation mentioning the grammatical term] [reason for first correction]. [Ukrainian explanation mentioning another grammatical term] [reason for second correction].</explanation>
+<correct_translation>[Correct sentence structure] <b>[corrected element]</b> [rest of sentence] <b>[another corrected element]</b>.</correct_translation>
+<explanation>Потрібен <b>Dativ</b> відмінок після прийменника. <i>Неправильний вибір</i> <b>Hilfsverb</b> у <b>Perfekt</b> - дієслова руху вимагають <code>sein</code>.</explanation>
 ```
 
 Begin your thorough analysis now.
