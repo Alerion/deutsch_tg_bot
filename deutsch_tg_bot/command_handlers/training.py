@@ -100,6 +100,7 @@ training_handler = ConversationHandler(
         NEW_EXERCISE: [excercise_handler],
     },
     fallbacks=[CommandHandler("stop", stop_command)],
+    allow_reentry=True,
 )
 
 
