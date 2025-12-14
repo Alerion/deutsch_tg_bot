@@ -150,9 +150,9 @@ excercise_handler = ConversationHandler(
     },
     fallbacks=[
         CommandHandler("stop", stop_command),
-        CommandHandler("next", new_exercise),
     ],
     map_to_parent={END: END},
+    allow_reentry=True,
 )
 
 
