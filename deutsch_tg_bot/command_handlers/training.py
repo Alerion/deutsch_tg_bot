@@ -32,7 +32,7 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
 
     await update.message.reply_text(
         "Привіт! Я твій бот для вивчення німецької мови. Будь ласка, обери свій поточний рівень німецької:",
-        reply_markup=_get_level_keyboard(),
+        reply_markup=get_deutsch_level_keyboard(),
     )
 
     return STORE_LEVEL
@@ -51,7 +51,7 @@ async def store_level(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
     except ValueError:
         await update.message.reply_text(
             "Обрано невірний рівень. Будь ласка, обери правильний рівень німецької з клавіатури.",
-            reply_markup=_get_level_keyboard(),
+            reply_markup=get_deutsch_level_keyboard(),
         )
         return STORE_LEVEL
 
@@ -104,7 +104,7 @@ training_handler = ConversationHandler(
 )
 
 
-def _get_level_keyboard() -> ReplyKeyboardMarkup:
+def get_deutsch_level_keyboard() -> ReplyKeyboardMarkup:
     buttons = [
         [
             DeutschLevel.A2.value,

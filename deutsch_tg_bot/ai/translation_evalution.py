@@ -19,8 +19,8 @@ from deutsch_tg_bot.data_types import Sentence
 
 genai_client = genai.Client(api_key=settings.GOOGLE_API_KEY).aio
 
-# GOOGLE_MODEL = "gemini-2.5-flash"
-GOOGLE_MODEL = "gemini-2.5-flash-lite"
+GOOGLE_MODEL = "gemini-2.5-flash"
+# GOOGLE_MODEL = "gemini-2.5-flash-lite"
 
 
 @dataclass

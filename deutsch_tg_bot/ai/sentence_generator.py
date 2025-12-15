@@ -6,6 +6,7 @@ from itertools import cycle
 from typing import Any, TypedDict
 
 from google import genai
+from pydantic import BaseModel, Field
 from rich import print as rprint
 from rich.console import Group
 from rich.markdown import Markdown
@@ -13,7 +14,6 @@ from rich.panel import Panel
 from rich.pretty import Pretty
 
 from deutsch_tg_bot.ai.prompt_utils import (
-    extract_tag_content,
     load_prompt_template_from_file,
     replace_promt_placeholder,
 )
@@ -29,10 +29,25 @@ from deutsch_tg_bot.deutsh_enums import (
 
 genai_client = genai.Client(api_key=settings.GOOGLE_API_KEY).aio
 
-# GOOGLE_MODEL = "gemini-2.5-flash"
-GOOGLE_MODEL = "gemini-2.5-flash-lite"
+GOOGLE_MODEL = "gemini-2.5-flash"
+# GOOGLE_MODEL = "gemini-2.5-flash-lite"
 
 _times: list[float] = []
+
+
+class GenerateSentenceResponse(BaseModel):
+    planning: str = Field(
+        description="Detailed step-by-step thinking process (Step 1-8). Analyze level, tense, and constraints here."
+    )
+    ukrainian_sentence: str = Field(
+        description="The final Ukrainian sentence for the user to translate."
+    )
+    german_reference: str = Field(
+        description="The ideal German translation focusing on the specific grammar rule."
+    )
+    grammar_explanation: str = Field(
+        description="Short explanation of why this sentence fits the level/tense."
+    )
 
 
 class SentenceGeneratorParams(TypedDict):
@@ -45,19 +60,21 @@ class SentenceGeneratorParams(TypedDict):
 
 
 async def generate_sentence_with_ai(user_prompt_params: SentenceGeneratorParams) -> Sentence:
-    system_prompt = get_sentence_generator_system_prompt()
-    user_prompt = get_sentence_generator_message_template() % user_prompt_params
+    sentence_generator_prompt = get_sentence_generator_prompt() % user_prompt_params
 
     start_time = time.time()
     response = await genai_client.models.generate_content(
         model=GOOGLE_MODEL,
         config=genai.types.GenerateContentConfig(
-            system_instruction=system_prompt,
+            response_mime_type="application/json",
+            response_json_schema=GenerateSentenceResponse.model_json_schema(),
+            temperature=0.7,
         ),
-        contents=user_prompt,
+        contents=sentence_generator_prompt,
     )
+
     usage = response.usage_metadata
-    ai_response = (response.text or "").strip()
+    generate_sentence_response = GenerateSentenceResponse.model_validate_json(response.text or "")
 
     _times.append(time.time() - start_time)
     average_time = sum(_times) / len(_times)
@@ -77,19 +94,16 @@ async def generate_sentence_with_ai(user_prompt_params: SentenceGeneratorParams)
     if settings.SHOW_FULL_AI_RESPONSE:
         group_panels.append(
             Panel(
-                Markdown(ai_response),
+                Pretty(generate_sentence_response, expand_all=True),
                 title="Full AI Response",
             )
         )
 
     rprint(Panel(Group(*group_panels), title="Sentence Generation", border_style="green"))
 
-    ukrainian_sentence = extract_tag_content(ai_response, "ukrainian_sentence")
-    if ukrainian_sentence is None:
-        raise ValueError("Failed to extract ukrainian_sentence from AI response")
     return Sentence(
         sentence_type=user_prompt_params["sentence_type"],
-        ukrainian_sentence=ukrainian_sentence,
+        ukrainian_sentence=generate_sentence_response.ukrainian_sentence,
         tense=user_prompt_params["tense"],
         level=user_prompt_params["level"],
     )
@@ -132,13 +146,8 @@ def get_random_sentence_theme() -> tuple[str, str]:
 
 
 @cache
-def get_sentence_generator_message_template() -> str:
-    return replace_promt_placeholder(load_prompt_template_from_file("generate_sentence_user.txt"))
-
-
-@cache
-def get_sentence_generator_system_prompt() -> str:
-    return load_prompt_template_from_file("generate_sentence_system.txt")
+def get_sentence_generator_prompt() -> str:
+    return replace_promt_placeholder(load_prompt_template_from_file("generate_sentence.txt"))
 
 
 @cache
