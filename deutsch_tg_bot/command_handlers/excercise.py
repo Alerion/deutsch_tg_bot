@@ -16,7 +16,7 @@ from deutsch_tg_bot.ai.sentence_generator import (
     get_sentence_generator_params,
 )
 from deutsch_tg_bot.ai.translation_evalution import (
-    TranslationCheckResult,
+    TranslationEvaluationResult,
     evaluate_translation_with_ai,
 )
 from deutsch_tg_bot.command_handlers.stop import stop_command
@@ -81,9 +81,7 @@ async def check_translation(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         check_result = await evaluate_translation_with_ai(current_sentence, user_answer)
 
     user_session.last_translation_check_result = check_result
-
-    corrected_sentence = translation_check_result_to_message(check_result)
-    user_session.sentences_history[-1].is_translation_correct = corrected_sentence is None
+    user_session.sentences_history[-1].is_translation_correct = check_result.is_translation_correct
 
     correct_answers_number = sum(
         1 for sentence in user_session.sentences_history if sentence.is_translation_correct is True
@@ -93,7 +91,7 @@ async def check_translation(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         f" з {len(user_session.sentences_history)}"
     )
 
-    if corrected_sentence is None:
+    if check_result.is_translation_correct:
         message = (
             "Переклад правильний!\n\n"
             f"{total_result_message}\n\n"
@@ -101,7 +99,7 @@ async def check_translation(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         )
     else:
         message = (
-            f"{corrected_sentence}\n\n"
+            f"{translation_check_result_to_message(check_result)}\n\n"
             f"{total_result_message}\n\n"
             "Якщо у тебе є ще питання, задай їх. Або введи /next для наступного речення."
         )
@@ -157,7 +155,7 @@ excercise_handler = ConversationHandler(
 
 
 def translation_check_result_to_message(
-    translation_check_result: TranslationCheckResult,
+    translation_check_result: TranslationEvaluationResult,
 ) -> str | None:
     if translation_check_result.correct_translation is None:
         return None

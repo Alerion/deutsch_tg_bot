@@ -13,7 +13,7 @@ from deutsch_tg_bot.ai.prompt_utils import (
     load_prompt_template_from_file,
     replace_promt_placeholder,
 )
-from deutsch_tg_bot.ai.translation_evalution import TranslationCheckResult
+from deutsch_tg_bot.ai.translation_evalution import TranslationEvaluationResult
 from deutsch_tg_bot.config import settings
 from deutsch_tg_bot.data_types import Sentence
 
@@ -26,12 +26,12 @@ GOOGLE_MODEL = "gemini-2.5-flash"
 async def answer_question_with_ai(
     user_question: str,
     sentence: Sentence,
-    translation_check_result: TranslationCheckResult,
+    translation_check_result: TranslationEvaluationResult,
     genai_chat: chats.AsyncChat | None = None,
 ) -> tuple[str, chats.AsyncChat]:
     prompt_params = {
         "ukrainian_sentence": sentence.ukrainian_sentence,
-        "evaluation_results": translation_check_result.evaluation_results,
+        "evaluation_results": translation_check_result.explanation,
         "level": sentence.level.value,
         "user_question": user_question,
     }

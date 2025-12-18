@@ -17,7 +17,7 @@ class Settings(BaseSettings):
 
     PREVIOUS_SENTENCES_NUMBER: int = 5
     SHOW_TOCKENS_USAGE: bool = False
-    SHOW_FULL_AI_RESPONSE: bool = False
+    SHOW_FULL_AI_RESPONSE: bool = True
 
     DEV_SKIP_SENTENCE_CONSTRAINT: bool = False
 

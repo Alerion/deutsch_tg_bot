@@ -90,7 +90,7 @@ Evaluate the translation using these five criteria (total: 10 points):
 
 # Your Analysis Task
 
-Before providing your final output, conduct a thorough analysis in `<analysis>` tags. Follow these three steps. It's OK for this section to be quite long.
+Conduct a thorough analysis following these three steps:
 
 ## Step 1: Parse the Ukrainian Sentence
 
@@ -160,51 +160,21 @@ Keep explanations minimal - state only what was wrong and why. Do NOT include ex
 
 # Output Format
 
-After completing your analysis in `<analysis>` tags, provide your evaluation using one of the following structures:
+You must respond with a valid JSON object using the following structure:
 
-## If the translation is absolutely perfect
-
-Provide no output after closing your `</analysis>` tag. The translation needs no corrections.
-
-## If there are any errors, missing parts, or unnatural phrasing
-
-Provide the following structure after closing your `</analysis>` tag:
-
-```
-<correct_translation>[Write the correct German sentence here using Telegram HTML formatting. Wrap corrected, added, or improved portions in <b> tags. Show the CORRECT form inside the tags, not the student's mistake.]</correct_translation>
-<explanation>[Write a concise explanation in Ukrainian using German grammatical terminology and Telegram HTML formatting for emphasis. State only what was corrected and why using specific grammatical terms. Adjust the level of detail based on the student's proficiency level. Do not repeat the correct translation. Do not include example sentences. Be direct and concrete.]</explanation>
+```json
+{
+    "planning": "Your complete analysis from Steps 1-3 above. Include all your reasoning, grammatical analysis, error identification, and correction planning. This should be comprehensive and detailed.",
+    "is_translation_correct": boolean,
+    "correct_translation": "The correct German sentence. If the student's translation was perfect, this should be the same as their translation. If there were errors, provide the corrected version with proper German grammar, tense usage, and natural phrasing.",
+    "explanation": "Concise explanation in Ukrainian using German grammatical terminology. Explain what was corrected and why, using specific grammatical terms like Akkusativ, Dativ, Perfekt, Hilfsverb, etc. Adjust complexity based on proficiency level. Only include this field if is_translation_correct is false. If the translation was correct, this field should be an empty string."
+}
 ```
 
-### Guidelines for Error Marking in <correct_translation>
+## Guidelines for Corrections
 
-- Wrap corrected words, added missing words, or improved phrasings in `<b>` tags (Telegram HTML bold formatting)
-- Show the CORRECT form inside the tags, not the student's mistake
-- Mark each separate correction individually
+- **correct_translation**: Should show the proper German sentence with correct grammar, cases, tense, and natural phrasing
+- **explanation**: Written in Ukrainian, using German grammatical terms, explaining only the essential corrections without repeating the translation or providing examples
+- **is_translation_correct**: Set to true only if the translation is absolutely perfect with no grammatical errors, unnatural phrasing, or missing elements
 
-**Examples of error marking:**
-- If student wrote "Ich habe gegangen" and should be "Ich bin gegangen", show: `Ich <b>bin gegangen</b>`
-- If student omitted a word, show it in tags: `Ich gehe <b>in die</b> Schule`
-- If a subordinate clause needs correction: `Er sagte, dass er <b>kommen würde</b>`
-
-### Guidelines for Explanations
-
-- ALWAYS provide an explanation when showing corrections
-- Write all explanation text in Ukrainian
-- Use Telegram HTML formatting for emphasis: `<b>German grammatical terms</b>`, `<i>Ukrainian terms</i>`, `<code>specific forms</code>`
-- Use German grammatical terms: Akkusativ, Dativ, Genitiv, Nominativ, Perfekt, Präteritum, Präsens, Futur, Konjunktiv I, Konjunktiv II, trennbares Verb, Hilfsverb, Nebensatz, Hauptsatz, Zeitenfolge, bestimmter Artikel, unbestimmter Artikel, etc.
-- Adjust explanation complexity based on proficiency level
-- Be CONCISE and CONCRETE - state only essential information
-- Do NOT repeat the correct translation (the student sees it in `<correct_translation>`)
-- Do NOT include example sentences (student can ask follow-up questions if needed)
-- State what type of error occurred and why, using specific grammatical terminology
-
-## Example Output Structure
-
-Here is a generic example showing the structure when corrections are needed:
-
-```
-<correct_translation>[Correct sentence structure] <b>[corrected element]</b> [rest of sentence] <b>[another corrected element]</b>.</correct_translation>
-<explanation>Потрібен <b>Dativ</b> відмінок після прийменника. <i>Неправильний вибір</i> <b>Hilfsverb</b> у <b>Perfekt</b> - дієслова руху вимагають <code>sein</code>.</explanation>
-```
-
-Begin your thorough analysis now.
+Begin your analysis and provide the JSON response.

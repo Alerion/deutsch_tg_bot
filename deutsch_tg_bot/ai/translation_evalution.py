@@ -1,8 +1,8 @@
 import time
-from dataclasses import dataclass
 from functools import cache
 
 from google import genai
+from pydantic import BaseModel, Field
 from rich import print as rprint
 from rich.console import Group
 from rich.markdown import Markdown
@@ -10,7 +10,6 @@ from rich.panel import Panel
 from rich.pretty import Pretty
 
 from deutsch_tg_bot.ai.prompt_utils import (
-    extract_tag_content,
     load_prompt_template_from_file,
     replace_promt_placeholder,
 )
@@ -23,17 +22,23 @@ GOOGLE_MODEL = "gemini-2.5-flash"
 # GOOGLE_MODEL = "gemini-2.5-flash-lite"
 
 
-@dataclass
-class TranslationCheckResult:
-    evaluation_results: str
-    correct_translation: str | None = None
-    explanation: str | None = None
+class TranslationEvaluationResult(BaseModel):
+    planning: str = Field(description="Detailed evaluation of the user's translation.")
+    is_translation_correct: bool = Field(
+        description="Indicates whether the user's translation is correct."
+    )
+    correct_translation: str = Field(
+        description="The correct German translation of the Ukrainian sentence."
+    )
+    explanation: str = Field(
+        description="Explanation of any mistakes made in the user's translation."
+    )
 
 
 async def evaluate_translation_with_ai(
     sentence: Sentence,
     user_translation: str,
-) -> TranslationCheckResult:
+) -> TranslationEvaluationResult:
     prompt_params = {
         "ukrainian_sentence": sentence.ukrainian_sentence,
         "level": sentence.level.value,
@@ -45,11 +50,17 @@ async def evaluate_translation_with_ai(
     start_time = time.time()
     response = await genai_client.models.generate_content(
         model=GOOGLE_MODEL,
+        config=genai.types.GenerateContentConfig(
+            response_mime_type="application/json",
+            response_json_schema=TranslationEvaluationResult.model_json_schema(),
+        ),
         contents=evaluate_prompt,
     )
 
     usage = response.usage_metadata
-    ai_response = (response.text or "").strip()
+    evaluate_translate_response = TranslationEvaluationResult.model_validate_json(
+        response.text or ""
+    )
 
     group_panels = [
         Panel(
@@ -63,23 +74,15 @@ async def evaluate_translation_with_ai(
         group_panels.append(Panel(Pretty(usage, expand_all=True), title="AI Usage"))
 
     if settings.SHOW_FULL_AI_RESPONSE:
-        print(ai_response)
         group_panels.append(
             Panel(
-                Markdown(ai_response),
+                Pretty(evaluate_translate_response, expand_all=True),
                 title="Full AI Response",
             )
         )
 
     rprint(Panel(Group(*group_panels), title="Translation Evaluation", border_style="blue"))
-
-    correct_translation = extract_tag_content(ai_response, "correct_translation")
-    explanation = extract_tag_content(ai_response, "explanation")
-    return TranslationCheckResult(
-        evaluation_results=ai_response,
-        correct_translation=correct_translation,
-        explanation=explanation,
-    )
+    return evaluate_translate_response
 
 
 @cache
