@@ -31,6 +31,7 @@ async def answer_question_with_ai(
 ) -> tuple[str, chats.AsyncChat]:
     prompt_params = {
         "ukrainian_sentence": sentence.ukrainian_sentence,
+        "german_sentence": sentence.german_sentence,
         "evaluation_results": translation_check_result.explanation,
         "level": sentence.level.value,
         "user_question": user_question,

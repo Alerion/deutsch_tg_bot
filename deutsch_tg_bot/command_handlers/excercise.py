@@ -82,6 +82,7 @@ async def check_translation(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 
     user_session.last_translation_check_result = check_result
     user_session.sentences_history[-1].is_translation_correct = check_result.is_translation_correct
+    user_session.sentences_history[-1].german_sentence = check_result.correct_translation
 
     correct_answers_number = sum(
         1 for sentence in user_session.sentences_history if sentence.is_translation_correct is True

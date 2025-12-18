@@ -104,6 +104,7 @@ async def generate_sentence_with_ai(user_prompt_params: SentenceGeneratorParams)
     return Sentence(
         sentence_type=user_prompt_params["sentence_type"],
         ukrainian_sentence=generate_sentence_response.ukrainian_sentence,
+        german_sentence=generate_sentence_response.german_reference,
         tense=user_prompt_params["tense"],
         level=user_prompt_params["level"],
     )
@@ -172,9 +173,11 @@ async def get_system_prompt_token_count() -> dict[str, Any]:
 
 def get_mocked_sentence(user_prompt_params: SentenceGeneratorParams) -> Sentence:
     ukrainian_sentence = next(mocked_ukrainian_sentences)
+    german_sentence = next(mocked_german_sentences)
     return Sentence(
         sentence_type=user_prompt_params["sentence_type"],
         ukrainian_sentence=ukrainian_sentence,
+        german_sentence=german_sentence,
         tense=user_prompt_params["tense"],
         level=user_prompt_params["level"],
     )
@@ -187,5 +190,15 @@ mocked_ukrainian_sentences = cycle(
         "Ми граємо у футбол.",
         "Вони живуть у великому місті.",
         "Я люблю читати книги.",
+    ]
+)
+
+mocked_german_sentences = cycle(
+    [
+        "Das ist mein Buch.",
+        "Sie geht zur Schule.",
+        "Wir spielen Fußball.",
+        "Sie wohnen in einer großen Stadt.",
+        "Ich lese gerne Bücher.",
     ]
 )

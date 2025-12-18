@@ -7,6 +7,7 @@ from deutsch_tg_bot.deutsh_enums import DeutschLevel, DeutschTense, SentenceType
 class Sentence:
     sentence_type: SentenceType
     ukrainian_sentence: str
+    german_sentence: str
     level: DeutschLevel
     tense: DeutschTense
     is_translation_correct: bool | None = None

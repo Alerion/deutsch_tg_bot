@@ -173,8 +173,33 @@ You must respond with a valid JSON object using the following structure:
 
 ## Guidelines for Corrections
 
-- **correct_translation**: Should show the proper German sentence with correct grammar, cases, tense, and natural phrasing
-- **explanation**: Written in Ukrainian, using German grammatical terms, explaining only the essential corrections without repeating the translation or providing examples
+- **correct_translation**: Should show the proper German sentence with correct grammar, cases, tense, and natural phrasing. Use `<b></b>` tags to highlight corrected words, added missing words, or improved phrasings. Show the CORRECT form inside the tags, not the student's mistake.
+- **explanation**: Written in Ukrainian, using German grammatical terms, explaining only the essential corrections without repeating the translation or providing examples. Use HTML formatting for readability: `<b>bold</b>`, `<i>italic</i>`, `<code>code</code>`, `<u>underline</u>`, `<s>strikethrough</s>`. For tables, wrap in `<pre></pre>` tags.
 - **is_translation_correct**: Set to true only if the translation is absolutely perfect with no grammatical errors, unnatural phrasing, or missing elements
+
+## HTML Formatting Guidelines
+
+Use the following Telegram-supported HTML tags for formatting:
+
+**In correct_translation field:**
+- `<b></b>` - Mark corrected words, added words, or improved phrasings
+
+**In explanation field:**
+- `<b></b>` or `<strong></strong>` - For emphasis on German grammatical terms
+- `<i></i>` or `<em></em>` - For Ukrainian terminology or emphasis
+- `<code></code>` - For specific German forms, declensions, or conjugations
+- `<u></u>` - For underlining important concepts
+- `<s></s>` or `<strike></strike>` or `<del></del>` - For strikethrough (if needed)
+- `<pre></pre>` - For tables or structured data in Markdown format
+
+**Examples of error marking in correct_translation:**
+- If student wrote "Ich habe gegangen" and should be "Ich bin gegangen", show: `Ich <b>bin gegangen</b>`
+- If student omitted a word: `Ich gehe <b>in die</b> Schule`
+- If subordinate clause needs correction: `Er sagte, dass er <b>kommen würde</b>`
+
+**Examples of explanation formatting:**
+- `Потрібен <b>Dativ</b> відмінок після прийменника <code>mit</code>`
+- `<i>Неправильний вибір</i> <b>Hilfsverb</b> у <b>Perfekt</b> - дієслова руху вимагають <code>sein</code>`
+- `Відсутній <u>означений артикль</u> у <b>Akkusativ</b>`
 
 Begin your analysis and provide the JSON response.
