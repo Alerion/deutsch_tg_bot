@@ -71,6 +71,27 @@ Each theme provides a coherent scenario with naturally related characters, setti
 
 If no theme is provided, create a sentence using diverse vocabulary without specific thematic constraints, ensuring variety in your word choices.
 
+### Requirement 6: Diversity from Recent Sentences
+
+**CRITICAL DIVERSITY REQUIREMENT**: If `<recent_sentences>` are provided, you MUST create a sentence that is clearly different from all of them. Analyze the recent sentences and ensure your new sentence differs in:
+
+- **Main subject/characters**: Use different people, animals, or objects as the main subject
+- **Main action/verb**: Choose a different primary action or verb
+- **Setting/location**: Use a different location or context
+- **Key adjectives/descriptors**: Avoid repeating the same descriptive words
+- **Overall scenario**: Create a distinctly different situation
+
+**Examples of sufficient diversity**:
+- Recent: "Мій брат читає цікаву книгу в бібліотеці" → Good: "Наша вчителька готує смачну вечерю на кухні"
+- Recent: "Діти грають у футбол на стадіоні" → Good: "Бабуся купує свіжі квіти на ринку"
+
+**Examples of insufficient diversity** (avoid these):
+- Recent: "Мій брат читає цікаву книгу в бібліотеці" → Bad: "Моя сестра читає новий журнал у кімнаті" (too similar: family member + reading + location)
+
+The sentence should feel fresh and engaging compared to recent ones while still meeting all other requirements.
+
+If no recent sentences are provided, focus on creating varied, interesting content.
+
 ## Planning Process
 
 Work through these steps inside your `<sentence_planning>` section:
@@ -83,24 +104,34 @@ Based on the specified level, determine:
 - **For B1/B2**: Confirm you will use maximum 1 subordinate clause
 - Be specific about your choices
 
-**Step 2: Apply Thematic Scenario** (if provided)
+**Step 2: Analyze Recent Sentences for Diversity** (if provided)
+If recent sentences are provided:
+- List the main elements from each recent sentence (subjects, verbs, locations, adjectives)
+- Identify patterns to avoid (repeated themes, similar vocabulary, same sentence structures)
+- Plan how your new sentence will be distinctly different
+- Ensure you maintain thematic coherence (if theme provided) while achieving diversity
+
+If no recent sentences are provided, note this and proceed to focus on general variety.
+
+**Step 3: Apply Thematic Scenario** (if provided)
 If a sentence_theme is given:
 - Explain how you will create a logical scenario within this theme
 - Plan which characters, setting, objects, and actions naturally fit together in this context
 - Ensure the scenario makes realistic sense
+- Balance thematic consistency with diversity from recent sentences
 
-**Step 3: Map Tense Requirements**
+**Step 4: Map Tense Requirements**
 For the specified German tense:
 - Determine exactly what Ukrainian verb forms you will use
 - Explain how these Ukrainian forms will naturally map to the target German tense when translated
 
-**Step 4: Plan Sentence Type**
+**Step 5: Plan Sentence Type**
 For the required sentence type:
 - If affirmative: Plan a clear declarative statement structure
 - If interrogative: Decide on question type (yes/no, wh-question, etc.) and structure
 - If negative: Plan which negation words you'll use in Ukrainian and how they'll translate to German negation
 
-**Step 5: Plan Optional Constraint Integration** (if provided)
+**Step 6: Plan Optional Constraint Integration** (if provided)
 If an `<optional_constraint>` is provided:
 - Explain exactly how it will appear in the German translation
 - Work backwards to plan how you will construct the Ukrainian sentence to achieve this naturally
@@ -108,29 +139,32 @@ If an `<optional_constraint>` is provided:
 
 If no constraint is provided, note that this step does not apply.
 
-**Step 6: Draft Ukrainian Sentence**
+**Step 7: Draft Ukrainian Sentence**
 - Draft your Ukrainian sentence ensuring it follows your thematic scenario (if any)
 - Ensure the sentence will produce the expected German translation with the target tense
+- Double-check diversity from recent sentences
 
-**Step 7: Verify Requirements**
+**Step 8: Verify Requirements**
 - Verify the proficiency level is appropriate for the vocabulary and structures used
 - **If A2**: Confirm at least ONE adjective is present
 - **If B1/B2**: Confirm maximum 1 subordinate clause
 - Confirm sentence type matching (affirmative/interrogative/negative)
+- **Diversity check**: Confirm your sentence is sufficiently different from recent sentences
 - **Logic check**: Ensure your sentence makes realistic sense and avoids absurd combinations
 - If theme provided, verify the sentence fits logically within that thematic context
 - If constraint provided, verify natural incorporation
 
-**Step 8: Final Check**
+**Step 9: Final Check**
 - Review your Ukrainian sentence one final time
 - Confirm it will produce a grammatically correct, natural-sounding German translation appropriate for the proficiency level
+- Ensure it provides fresh, engaging content for the learner
 
 ## Output Format
 
 You must output a single valid JSON object. Do not include markdown formatting (like ```json). The JSON must have the following schema:
 
 {
-  "thought_process": "Your step-by-step planning (Step 1-8 logic). Explain how you matched the level, tense, and constraints.",
+  "thought_process": "Your step-by-step planning (Step 1-9 logic). Explain how you matched the level, tense, constraints, and ensured diversity from recent sentences.",
   "ukrainian_sentence": "The final Ukrainian sentence for the user to translate.",
   "target_german_reference": "The intended German translation that fits all grammatical constraints perfectly. This serves as the 'gold standard' answer.",
 }
@@ -164,5 +198,11 @@ Here is an optional constraints :
 <sentence_theme>
 {{sentence_theme}}
 </sentence_theme>
+
+Here are the recent sentences generated for this user (to ensure diversity):
+
+<recent_sentences>
+{{recent_sentences}}
+</recent_sentences>
 
 Please proceed with generating your Ukrainian sentence and its expected German translation following all requirements and planning steps.

@@ -54,6 +54,7 @@ class SentenceGeneratorParams(TypedDict):
     level: DeutschLevel
     tense: DeutschTense
     sentence_type: SentenceType
+    recent_sentences: str
     optional_constraint: str | None
     sentence_theme: str | None
     sentence_theme_topic: str | None
@@ -111,13 +112,22 @@ async def generate_sentence_with_ai(user_prompt_params: SentenceGeneratorParams)
 
 
 def get_sentence_generator_params(
-    level: DeutschLevel, optional_constraint: str | None
+    level: DeutschLevel,
+    tense: DeutschTense,
+    sentences_history: list[Sentence],
+    optional_constraint: str | None = None,
+    recent_sentences_count: int = 3,
 ) -> SentenceGeneratorParams:
+    recent_sentences: list[str] = [
+        sentence.german_sentence for sentence in sentences_history[-recent_sentences_count:]
+    ]
+
     user_prompt_params: SentenceGeneratorParams = {
         "level": level,
-        "tense": get_random_tense_for_level(level),
+        "tense": tense,
         "sentence_type": get_random_sentence_type(),
         "optional_constraint": optional_constraint,
+        "recent_sentences": "\n".join(recent_sentences),
         "sentence_theme": None,
         "sentence_theme_topic": None,
     }
