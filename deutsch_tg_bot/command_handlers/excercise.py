@@ -13,7 +13,6 @@ from deutsch_tg_bot.ai.question_answering import answer_question_with_ai
 from deutsch_tg_bot.ai.sentence_generator import (
     SentenceGeneratorParams,
     generate_sentence_with_ai,
-    get_random_tense_for_level,
     get_sentence_generator_params,
 )
 from deutsch_tg_bot.ai.translation_evalution import (
@@ -41,9 +40,12 @@ async def new_exercise(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     if user_session.level is None:
         raise ValueError("Expected level in user_session")
 
+    random_tense_selector = user_session.random_tense_selector
+    if random_tense_selector is None:
+        raise ValueError("Expected random_tense_selector in user_session")
     sentence_generator_params = get_sentence_generator_params(
         level=user_session.level,
-        tense=get_random_tense_for_level(user_session.level),
+        tense=random_tense_selector.select(),
         sentences_history=user_session.sentences_history,
         optional_constraint=user_session.sentence_constraint,
     )

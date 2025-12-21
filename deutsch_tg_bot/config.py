@@ -2,8 +2,6 @@ import os
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-print(os.environ.get("GOOGLE_API_KEY"))
-
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(

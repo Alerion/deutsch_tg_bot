@@ -20,7 +20,6 @@ from deutsch_tg_bot.ai.prompt_utils import (
 from deutsch_tg_bot.config import settings
 from deutsch_tg_bot.data_types import Sentence
 from deutsch_tg_bot.deutsh_enums import (
-    DEUTCH_LEVEL_TENSES,
     DeutschLevel,
     DeutschTense,
     SentenceType,
@@ -137,11 +136,6 @@ def get_sentence_generator_params(
             get_random_sentence_theme()
         )
     return user_prompt_params
-
-
-def get_random_tense_for_level(level: DeutschLevel) -> DeutschTense:
-    tenses = DEUTCH_LEVEL_TENSES[level]
-    return random.choice(tenses)
 
 
 def get_random_sentence_type() -> SentenceType:

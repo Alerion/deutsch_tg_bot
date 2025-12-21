@@ -12,8 +12,9 @@ from telegram.ext import (
 from deutsch_tg_bot.command_handlers.excercise import excercise_handler
 from deutsch_tg_bot.command_handlers.stop import stop_command
 from deutsch_tg_bot.config import settings
-from deutsch_tg_bot.deutsh_enums import DeutschLevel
+from deutsch_tg_bot.deutsh_enums import DEUTCH_LEVEL_TENSES, DeutschLevel
 from deutsch_tg_bot.user_session import UserSession
+from deutsch_tg_bot.utils.random_selector import BalancedRandomSelector
 
 STORE_LEVEL = 1
 STORE_SENTENCE_CONSTRAINT = 2
@@ -54,6 +55,10 @@ async def store_level(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
             reply_markup=get_deutsch_level_keyboard(),
         )
         return STORE_LEVEL
+
+    user_session.random_tense_selector = BalancedRandomSelector(
+        items=DEUTCH_LEVEL_TENSES[user_session.level],
+    )
 
     if settings.DEV_SKIP_SENTENCE_CONSTRAINT:
         await update.message.reply_text("Введи /next, щоб отримати перше завдання.")
