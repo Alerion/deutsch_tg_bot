@@ -43,9 +43,15 @@ async def new_exercise(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     random_tense_selector = user_session.random_tense_selector
     if random_tense_selector is None:
         raise ValueError("Expected random_tense_selector in user_session")
+
+    random_sentence_type_selector = user_session.random_sentence_type_selector
+    if random_sentence_type_selector is None:
+        raise ValueError("Expected random_sentence_type_selector in user_session")
+
     sentence_generator_params = get_sentence_generator_params(
         level=user_session.level,
         tense=random_tense_selector.select(),
+        sentence_type=random_sentence_type_selector.select(),
         sentences_history=user_session.sentences_history,
         optional_constraint=user_session.sentence_constraint,
     )

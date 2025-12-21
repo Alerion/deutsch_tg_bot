@@ -23,7 +23,6 @@ from deutsch_tg_bot.deutsh_enums import (
     DeutschLevel,
     DeutschTense,
     SentenceType,
-    SentenceTypeProbabilities,
 )
 
 genai_client = genai.Client(api_key=settings.GOOGLE_API_KEY).aio
@@ -113,6 +112,7 @@ async def generate_sentence_with_ai(user_prompt_params: SentenceGeneratorParams)
 def get_sentence_generator_params(
     level: DeutschLevel,
     tense: DeutschTense,
+    sentence_type: SentenceType,
     sentences_history: list[Sentence],
     optional_constraint: str | None = None,
     recent_sentences_count: int = 3,
@@ -124,7 +124,7 @@ def get_sentence_generator_params(
     user_prompt_params: SentenceGeneratorParams = {
         "level": level,
         "tense": tense,
-        "sentence_type": get_random_sentence_type(),
+        "sentence_type": sentence_type,
         "optional_constraint": optional_constraint,
         "recent_sentences": "\n".join(recent_sentences),
         "sentence_theme": None,
@@ -136,12 +136,6 @@ def get_sentence_generator_params(
             get_random_sentence_theme()
         )
     return user_prompt_params
-
-
-def get_random_sentence_type() -> SentenceType:
-    sentence_types = list(SentenceTypeProbabilities.keys())
-    probabilities = list(SentenceTypeProbabilities.values())
-    return random.choices(sentence_types, weights=probabilities, k=1)[0]
 
 
 def get_random_sentence_theme() -> tuple[str, str]:

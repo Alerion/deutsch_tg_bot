@@ -12,7 +12,7 @@ from telegram.ext import (
 from deutsch_tg_bot.command_handlers.excercise import excercise_handler
 from deutsch_tg_bot.command_handlers.stop import stop_command
 from deutsch_tg_bot.config import settings
-from deutsch_tg_bot.deutsh_enums import DEUTCH_LEVEL_TENSES, DeutschLevel
+from deutsch_tg_bot.deutsh_enums import DEUTCH_LEVEL_TENSES, DeutschLevel, SentenceTypeProbabilities
 from deutsch_tg_bot.user_session import UserSession
 from deutsch_tg_bot.utils.random_selector import BalancedRandomSelector
 
@@ -58,6 +58,10 @@ async def store_level(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
 
     user_session.random_tense_selector = BalancedRandomSelector(
         items=DEUTCH_LEVEL_TENSES[user_session.level],
+    )
+    user_session.random_sentence_type_selector = BalancedRandomSelector(
+        items=list(SentenceTypeProbabilities.keys()),
+        weights=list(SentenceTypeProbabilities.values()),
     )
 
     if settings.DEV_SKIP_SENTENCE_CONSTRAINT:
