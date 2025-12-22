@@ -8,9 +8,9 @@ class SentenceType(str, Enum):
 
 
 SentenceTypeProbabilities: dict[SentenceType, float] = {
-    SentenceType.AFFIRMATIVE: 0.5,
-    SentenceType.INTERROGATIVE: 0.25,
-    SentenceType.NEGATIVE: 0.25,
+    SentenceType.AFFIRMATIVE: 0.6,
+    SentenceType.INTERROGATIVE: 0.2,
+    SentenceType.NEGATIVE: 0.2,
 }
 
 
@@ -39,7 +39,7 @@ DEUTCH_LEVEL_TENSES = {
     DeutschLevel.B1: [
         DeutschTense.PRÄSENS,
         DeutschTense.PERFEKT,
-        DeutschTense.PRÄTERITUM,
+        DeutschTense.PRÄSENS_FUTUR,
     ],
     DeutschLevel.B2: [
         DeutschTense.PRÄSENS,
