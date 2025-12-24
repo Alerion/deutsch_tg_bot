@@ -1,3 +1,4 @@
+import asyncio
 from typing import cast
 
 from telegram import Update
@@ -11,7 +12,6 @@ from telegram.ext import (
 
 from deutsch_tg_bot.ai.question_answering import answer_question_with_ai
 from deutsch_tg_bot.ai.sentence_generator import (
-    SentenceGeneratorParams,
     generate_sentence_with_ai,
     get_sentence_generator_params,
 )
@@ -20,6 +20,7 @@ from deutsch_tg_bot.ai.translation_evalution import (
     evaluate_translation_with_ai,
 )
 from deutsch_tg_bot.command_handlers.stop import stop_command
+from deutsch_tg_bot.data_types import Sentence
 from deutsch_tg_bot.tg_progress import progress
 from deutsch_tg_bot.user_session import UserSession
 
@@ -33,6 +34,33 @@ async def new_exercise(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     if update.message is None or update.message.text is None:
         raise ValueError("Expected a message in update")
 
+    if context.user_data is None:
+        raise ValueError("Expected user_data in context")
+    user_session = cast(UserSession, context.user_data["session"])
+
+    if user_session.new_sentence_generation_task is None:
+        user_session.new_sentence_generation_task = asyncio.create_task(
+            _generate_new_sentence(context)
+        )
+
+    if not user_session.new_sentence_generation_task.done():
+        async with progress(update, "Генерую нове речення"):
+            await asyncio.wait([user_session.new_sentence_generation_task])
+
+    new_sentence = user_session.new_sentence_generation_task.result()
+    user_session.sentences_history.append(new_sentence)
+    sentence_number = len(user_session.sentences_history)
+    message = (
+        f"<b>{sentence_number}. Переклади речення:</b>\n{new_sentence.ukrainian_sentence}\n\n"
+        f"<b>Час</b>: {new_sentence.tense.value}"
+    )
+    await update.message.reply_text(message, parse_mode="HTML")
+
+    user_session.new_sentence_generation_task = asyncio.create_task(_generate_new_sentence(context))
+    return CHECK_TRANSLATION
+
+
+async def _generate_new_sentence(context: ContextTypes.DEFAULT_TYPE) -> Sentence:
     if context.user_data is None:
         raise ValueError("Expected user_data in context")
     user_session = cast(UserSession, context.user_data["session"])
@@ -55,26 +83,8 @@ async def new_exercise(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
         sentences_history=user_session.sentences_history,
         optional_constraint=user_session.sentence_constraint,
     )
-
-    progress_message = get_new_sentence_progress_message(sentence_generator_params)
-    async with progress(update, progress_message):
-        new_sentence = await generate_sentence_with_ai(sentence_generator_params)
-
-    user_session.sentences_history.append(new_sentence)
-    sentence_number = len(user_session.sentences_history)
-    message = (
-        f"<b>{sentence_number}. Переклади речення:</b>\n{new_sentence.ukrainian_sentence}\n\n"
-        f"<b>Час</b>: {new_sentence.tense.value}"
-    )
-    await update.message.reply_text(message, parse_mode="HTML")
-    return CHECK_TRANSLATION
-
-
-def get_new_sentence_progress_message(sentence_generator_params: SentenceGeneratorParams) -> str:
-    topic = sentence_generator_params["sentence_theme_topic"]
-    if topic:
-        return f'Генерую речення на тему "{topic}"'
-    return "Генерую речення"
+    new_sentence = await generate_sentence_with_ai(sentence_generator_params)
+    return new_sentence
 
 
 async def check_translation(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:

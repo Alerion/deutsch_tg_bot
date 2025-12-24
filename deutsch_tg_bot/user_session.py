@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass, field
 
 from google.genai import chats
@@ -19,3 +20,4 @@ class UserSession:
     sentence_constraint: str | None = None
     genai_chat: chats.AsyncChat | None = None
     last_translation_check_result: TranslationEvaluationResult | None = None
+    new_sentence_generation_task: asyncio.Task[Sentence] | None = None
