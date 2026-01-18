@@ -3,7 +3,7 @@ import re
 import time
 from functools import cache
 from itertools import cycle
-from typing import Any, TypedDict
+from typing import TypedDict
 
 from google import genai
 from pydantic import BaseModel, Field
@@ -162,11 +162,6 @@ def get_sentence_themes() -> dict[str, str]:
             key = match.group(1).replace("_", " ")
             sentence_themes_dict[key] = theme_str
     return sentence_themes_dict
-
-
-async def get_system_prompt_token_count() -> dict[str, Any]:
-    # TODO
-    return {}
 
 
 def get_mocked_sentence(user_prompt_params: SentenceGeneratorParams) -> Sentence:
