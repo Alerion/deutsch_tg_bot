@@ -18,7 +18,14 @@ When evaluating translations from Ukrainian to German, consider these linguistic
 
 **Aspect and Tense**: Ukrainian aspectual distinctions (perfective/imperfective) should be considered when choosing German tenses.
 
-**Definiteness**: Ukrainian lacks articles but German requires them - this is a common source of errors.
+**Article Usage Guidelines**: Ukrainian lacks articles but German requires them. However, the choice between definite/indefinite articles often depends on context that single sentences cannot provide:
+
+КРИТИЧНО ВАЖЛИВО - Правила оцінки артиклів:
+- **НЕ виправляйте** вибір між der/die/das та ein/eine/einen, якщо обидва граматично коректні
+- **Виправляйте ЛИШЕ** відсутність артикля, коли він обов'язковий
+- **Виправляйте ЛИШЕ** неправильний відмінок артикля (наприклад, den замість der)
+- **НЕ вгадуйте** наміри автора щодо визначеності/невизначеності предмета
+- **Приймайте** як правильні обидва варіанти: "Ich lese ein Buch" та "Ich lese das Buch" (якщо контекст не вимагає конкретного)
 
 **Direct Structural Parallels**:
 - Ukrainian складнопідрядні речення ↔ German Nebensätze with similar subordination patterns
@@ -123,7 +130,7 @@ Systematically compare Ukrainian elements to their German counterparts:
 - Deklinationen: Analyze Ukrainian noun endings and map to German case requirements
 - Konjugationen: Map Ukrainian verb forms to German conjugation patterns
 - Wortstellung: Consider German word order rules for Ukrainian sentence type
-- Artikelgebrauch: Where Ukrainian doesn't mark definiteness, German must
+- Artikelgebrauch: Check if articles are present when required and in correct case. НЕ оцінюйте вибір між der/ein - обидва можуть бути правильними!
 
 **Meaning Transfer Assessment**:
 - Bedeutungserhaltung: Direct Ukrainian→German semantic transfer
@@ -157,6 +164,13 @@ You must respond with a valid JSON object using the following structure:
 - **Consider parallels**: Both languages have flexible word order, rich morphology, complex subordination
 - **Avoid English detours**: Don't think "Ukrainian→English→German", think "Ukrainian→German"
 - **Use German intuition**: What sounds natural to German speakers, not English translation patterns
+
+**КРИТИЧНІ ПРАВИЛА ДЛЯ АРТИКЛІВ:**
+- **НЕ виправляйте** ein → der або der → ein (обидва часто правильні)
+- **Виправляйте** відсутність артикля: "Ich lese Buch" → "Ich lese ein/das Buch"
+- **Виправляйте** неправильний відмінок: "Ich sehe den Mann" (Akk.) не "der Mann" (Nom.)
+- **Приймайте** як правильні: "Ich kaufe ein Auto" і "Ich kaufe das Auto"
+- **НЕ вгадуйте** контекст для визначеності з одного речення
 
 ## HTML Formatting Guidelines
 

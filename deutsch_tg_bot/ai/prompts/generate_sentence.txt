@@ -56,7 +56,24 @@ Construct your sentence to match the required `sentence_type`:
 
 - **affirmative**: Create a declarative statement
 - **interrogative**: Create a question
-- **negative**: Create a sentence containing negation (e.g., using "не", "ніколи", "ніхто", etc. in Ukrainian, which translates to "nicht", "kein", "nie", "niemals", "niemand", etc. in German)
+- **negative**: Create a sentence containing negation. **CRITICAL NEGATION REQUIREMENT**: You must distinguish between two types of German negation and use appropriate Ukrainian equivalents:
+
+  **Type 1 - nicht negation (action/adjective/adverb negation):**
+  - German uses "nicht" to negate verbs, adjectives, adverbs, or entire clauses
+  - Ukrainian equivalent: "не" + verb/adjective/adverb
+  - Examples:
+    - "Він не читає газету" → "Er liest die Zeitung nicht"
+    - "Вона не розумна" → "Sie ist nicht klug"
+
+  **Type 2 - kein negation (noun negation):**
+  - German uses "kein" to negate indefinite nouns (with indefinite article or no article)
+  - Ukrainian equivalents (choose most natural):
+    - "немає" + noun in genitive case: "У мене немає часу" → "Ich habe keine Zeit"
+    - "жоден/жодна/жодне/жодні" + noun: "Жоден студент не прийшов" → "Kein Student ist gekommen"
+    - "ніякий/ніяка/ніяке/ніякі" + noun: "Вона не має ніякого досвіду" → "Sie hat keine Erfahrung"
+    - "ані" + noun in genitive: "Ані слова не сказав" → "Er hat kein Wort gesagt" (formal/literary)
+
+  **Planning for negative sentences**: In your thought process, explicitly decide whether the German translation should use "nicht" or "kein", then construct the Ukrainian sentence with the appropriate negation pattern.
 
 ### Requirement 4: Optional Constraint Integration
 
@@ -125,11 +142,15 @@ For the specified German tense:
 - Determine exactly what Ukrainian verb forms you will use
 - Explain how these Ukrainian forms will naturally map to the target German tense when translated
 
-**Step 5: Plan Sentence Type**
+**Step 5: Plan Sentence Type and Negation** (if applicable)
 For the required sentence type:
 - If affirmative: Plan a clear declarative statement structure
 - If interrogative: Decide on question type (yes/no, wh-question, etc.) and structure
-- If negative: Plan which negation words you'll use in Ukrainian and how they'll translate to German negation
+- If negative: **CRITICAL NEGATION PLANNING**:
+  - First decide whether the German translation should use "nicht" or "kein"
+  - If "nicht": Plan to use "не" + verb/adjective/adverb in Ukrainian
+  - If "kein": Plan to use appropriate Ukrainian noun negation ("немає" + genitive, "жоден/жодна/жодне/жодні", "ніякий/ніяка/ніяке/ніякі", or "ані" + genitive)
+  - Explain your choice and how it will map to the German structure
 
 **Step 6: Plan Optional Constraint Integration** (if provided)
 If an `<optional_constraint>` is provided:
@@ -142,6 +163,7 @@ If no constraint is provided, note that this step does not apply.
 **Step 7: Draft Ukrainian Sentence**
 - Draft your Ukrainian sentence ensuring it follows your thematic scenario (if any)
 - Ensure the sentence will produce the expected German translation with the target tense
+- **For negative sentences**: Verify your negation choice matches your planning from Step 5
 - Double-check diversity from recent sentences
 
 **Step 8: Verify Requirements**
@@ -149,6 +171,7 @@ If no constraint is provided, note that this step does not apply.
 - **If A2**: Confirm at least ONE adjective is present
 - **If B1/B2**: Confirm maximum 1 subordinate clause
 - Confirm sentence type matching (affirmative/interrogative/negative)
+- **For negative sentences**: Verify that your Ukrainian negation pattern will clearly indicate whether to use "nicht" or "kein" in German
 - **Diversity check**: Confirm your sentence is sufficiently different from recent sentences
 - **Logic check**: Ensure your sentence makes realistic sense and avoids absurd combinations
 - If theme provided, verify the sentence fits logically within that thematic context
@@ -157,6 +180,7 @@ If no constraint is provided, note that this step does not apply.
 **Step 9: Final Check**
 - Review your Ukrainian sentence one final time
 - Confirm it will produce a grammatically correct, natural-sounding German translation appropriate for the proficiency level
+- **For negative sentences**: Double-check that the negation type is unambiguous
 - Ensure it provides fresh, engaging content for the learner
 
 ## Output Format
@@ -164,7 +188,7 @@ If no constraint is provided, note that this step does not apply.
 You must output a single valid JSON object. Do not include markdown formatting (like ```json). The JSON must have the following schema:
 
 {
-  "thought_process": "Your step-by-step planning (Step 1-9 logic). Explain how you matched the level, tense, constraints, and ensured diversity from recent sentences.",
+  "thought_process": "Your step-by-step planning (Step 1-9 logic). Explain how you matched the level, tense, constraints, and ensured diversity from recent sentences. For negative sentences, clearly state whether you're targeting 'nicht' or 'kein' and why.",
   "ukrainian_sentence": "The final Ukrainian sentence for the user to translate.",
   "target_german_reference": "The intended German translation that fits all grammatical constraints perfectly. This serves as the 'gold standard' answer.",
 }
