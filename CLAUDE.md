@@ -17,36 +17,6 @@
 - **uv**: Package manager
 - **just**: Task runner
 
-## Project Structure
-
-```
-deutsch_tg_bot/
-├── bot.py                    # Bot initialization and polling
-├── config.py                 # Pydantic Settings (env vars)
-├── data_types.py             # Shared models (Sentence)
-├── deutsh_enums.py           # DeutschLevel, DeutschTense, SentenceType
-├── user_session.py           # UserSession dataclass for state
-├── tg_progress.py            # Progress UI helper
-├── command_handlers/         # Telegram conversation handlers
-│   ├── training.py           # Main flow: start, level, type selection
-│   ├── excercise.py          # Translation exercise handler
-│   └── stop.py               # Exit command
-├── ai/                       # AI integration (Gemini)
-│   ├── sentence_generator.py # Generate sentence pairs
-│   ├── translation_evalution.py
-│   ├── question_answering.py
-│   ├── prompt_utils.py
-│   └── prompts/              # Prompt templates (.txt files)
-├── situation_training/       # Roleplay subsystem
-│   ├── handler.py            # Situation selection and conversation
-│   ├── situations.py         # 10 predefined scenarios
-│   └── ai/
-│       ├── situation_agent.py
-│       └── grammar_checker.py
-└── utils/
-    └── random_selector.py    # BalancedRandomSelector
-```
-
 ## Commands
 
 ```bash

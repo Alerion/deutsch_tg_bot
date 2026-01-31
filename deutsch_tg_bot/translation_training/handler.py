@@ -1,3 +1,5 @@
+"""ConversationHandler for translation training exercises."""
+
 import asyncio
 from typing import cast
 
@@ -10,18 +12,18 @@ from telegram.ext import (
     filters,
 )
 
-from deutsch_tg_bot.ai.question_answering import answer_question_with_ai
-from deutsch_tg_bot.ai.sentence_generator import (
-    generate_sentence_with_ai,
-    get_sentence_generator_params,
-)
-from deutsch_tg_bot.ai.translation_evalution import (
-    TranslationEvaluationResult,
-    evaluate_translation_with_ai,
-)
 from deutsch_tg_bot.command_handlers.stop import stop_command
 from deutsch_tg_bot.data_types import Sentence
 from deutsch_tg_bot.tg_progress import progress
+from deutsch_tg_bot.translation_training.ai.question_answering import answer_question_with_ai
+from deutsch_tg_bot.translation_training.ai.sentence_generator import (
+    generate_sentence_with_ai,
+    get_sentence_generator_params,
+)
+from deutsch_tg_bot.translation_training.ai.translation_evaluation import (
+    TranslationEvaluationResult,
+    evaluate_translation_with_ai,
+)
 from deutsch_tg_bot.user_session import UserSession
 
 CHECK_TRANSLATION = 4
@@ -162,7 +164,7 @@ async def answer_questions(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     return ANSWER_QUESTION
 
 
-excercise_handler = ConversationHandler(
+translation_training_handler = ConversationHandler(
     entry_points=[CommandHandler("next", new_exercise)],
     states={
         CHECK_TRANSLATION: [MessageHandler(filters.TEXT & ~filters.COMMAND, check_translation)],
@@ -183,7 +185,6 @@ def translation_check_result_to_message(
         return None
 
     correct_translation = translation_check_result.correct_translation
-    # correct_translation = correct_translation.replace("<error>", "*").replace("</error>", "*")
 
     message = f"\n\n<b>Правильний переклад:</b>\n{correct_translation}"
     message += f"\n\n<b>Пояснення:</b>\n{translation_check_result.explanation}"

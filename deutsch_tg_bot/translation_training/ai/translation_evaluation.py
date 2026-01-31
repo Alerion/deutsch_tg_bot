@@ -1,3 +1,6 @@
+"""AI module for evaluating user translations."""
+
+import os
 import time
 from functools import cache
 
@@ -9,16 +12,18 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.pretty import Pretty
 
-from deutsch_tg_bot.ai.prompt_utils import (
+from deutsch_tg_bot.config import settings
+from deutsch_tg_bot.data_types import Sentence
+from deutsch_tg_bot.utils.prompt_utils import (
     load_prompt_template_from_file,
     replace_promt_placeholder,
 )
-from deutsch_tg_bot.config import settings
-from deutsch_tg_bot.data_types import Sentence
 
 genai_client = genai.Client(api_key=settings.GOOGLE_API_KEY).aio
 
 GOOGLE_MODEL = "gemini-2.5-flash"
+
+PROMPTS_DIR = os.path.join(os.path.dirname(__file__), "prompts")
 
 
 class TranslationEvaluationResult(BaseModel):
@@ -86,4 +91,6 @@ async def evaluate_translation_with_ai(
 
 @cache
 def get_translation_evaluation_prompt_template() -> str:
-    return replace_promt_placeholder(load_prompt_template_from_file("translation_evaluation.txt"))
+    return replace_promt_placeholder(
+        load_prompt_template_from_file(PROMPTS_DIR, "translation_evaluation.txt")
+    )

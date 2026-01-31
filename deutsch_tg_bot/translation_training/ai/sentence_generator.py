@@ -1,3 +1,6 @@
+"""AI module for generating German sentences for translation training."""
+
+import os
 import random
 import re
 import time
@@ -13,10 +16,6 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.pretty import Pretty
 
-from deutsch_tg_bot.ai.prompt_utils import (
-    load_prompt_template_from_file,
-    replace_promt_placeholder,
-)
 from deutsch_tg_bot.config import settings
 from deutsch_tg_bot.data_types import Sentence
 from deutsch_tg_bot.deutsh_enums import (
@@ -24,18 +23,25 @@ from deutsch_tg_bot.deutsh_enums import (
     DeutschTense,
     SentenceType,
 )
+from deutsch_tg_bot.utils.prompt_utils import (
+    load_prompt_template_from_file,
+    replace_promt_placeholder,
+)
 
 genai_client = genai.Client(api_key=settings.GOOGLE_API_KEY).aio
 
 GOOGLE_MODEL = "gemini-2.5-flash"
 # GOOGLE_MODEL = "gemini-2.5-flash-lite"
 
+PROMPTS_DIR = os.path.join(os.path.dirname(__file__), "prompts")
+
 _times: list[float] = []
 
 
 class GenerateSentenceResponse(BaseModel):
     planning: str = Field(
-        description="Detailed step-by-step thinking process (Step 1-8). Analyze level, tense, and constraints here."
+        description="Detailed step-by-step thinking process (Step 1-8). "
+        "Analyze level, tense, and constraints here."
     )
     ukrainian_sentence: str = Field(
         description="The final Ukrainian sentence for the user to translate."
@@ -146,12 +152,14 @@ def get_random_sentence_theme() -> tuple[str, str]:
 
 @cache
 def get_sentence_generator_prompt() -> str:
-    return replace_promt_placeholder(load_prompt_template_from_file("generate_sentence.txt"))
+    return replace_promt_placeholder(
+        load_prompt_template_from_file(PROMPTS_DIR, "generate_sentence.txt")
+    )
 
 
 @cache
 def get_sentence_themes() -> dict[str, str]:
-    sentence_themes_str = load_prompt_template_from_file("sentence_themes.txt")
+    sentence_themes_str = load_prompt_template_from_file(PROMPTS_DIR, "sentence_themes.txt")
     sentence_themes_list = sentence_themes_str.split("\n\n")
     sentence_themes_list = [s.strip() for s in sentence_themes_list if s.strip()]
     key_parser_re = re.compile(r"^\*\*(.+?)\*\*")

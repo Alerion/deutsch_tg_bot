@@ -9,11 +9,11 @@ from telegram.ext import (
     filters,
 )
 
-from deutsch_tg_bot.command_handlers.excercise import excercise_handler
 from deutsch_tg_bot.command_handlers.stop import stop_command
 from deutsch_tg_bot.config import settings
 from deutsch_tg_bot.deutsh_enums import DEUTCH_LEVEL_TENSES, DeutschLevel, SentenceTypeProbabilities
 from deutsch_tg_bot.situation_training.handler import situation_training_handler
+from deutsch_tg_bot.translation_training.handler import translation_training_handler
 from deutsch_tg_bot.user_session import TrainingType, UserSession
 from deutsch_tg_bot.utils.random_selector import BalancedRandomSelector
 
@@ -169,7 +169,7 @@ training_handler = ConversationHandler(
             MessageHandler(filters.TEXT & ~filters.COMMAND, store_sentence_constraint),
         ],
         TRAINING_SESSION: [
-            excercise_handler,
+            translation_training_handler,
             situation_training_handler,
         ],
     },
