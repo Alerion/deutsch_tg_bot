@@ -75,20 +75,40 @@ Construct your sentence to match the required `sentence_type`:
 
   **Planning for negative sentences**: In your thought process, explicitly decide whether the German translation should use "nicht" or "kein", then construct the Ukrainian sentence with the appropriate negation pattern.
 
-### Requirement 4: Optional Constraint Integration
+### Requirement 4: Pronoun Capitalization (Polite Form)
+
+**CRITICAL CAPITALIZATION REQUIREMENT**: When using pronouns that correspond to the German polite form "Sie", you must use proper Ukrainian capitalization:
+
+- **German polite "Sie" (formal address to one person)** → **Ukrainian "Ви"** (capitalized)
+- **German plural "sie" (they/them)** → **Ukrainian "вони"** (lowercase)
+- **German plural "Sie" (formal address to multiple people)** → **Ukrainian "Ви"** (capitalized)
+
+**Examples**:
+- "Ви читаєте німецьку книгу" → "Sie lesen ein deutsches Buch" (polite singular)
+- "Що Ви думаєте про це?" → "Was denken Sie darüber?" (polite singular)
+- "вони працюють в офісі" → "sie arbeiten im Büro" (they - plural, informal)
+
+**Planning for polite pronouns**: When constructing sentences with second-person pronouns, explicitly decide whether you're using:
+- Formal address (Ви) → German "Sie"
+- Informal plural (ви) → German "ihr"
+- Third person plural (вони) → German "sie"
+
+The capitalization must be unambiguous to ensure correct German translation.
+
+### Requirement 5: Optional Constraint Integration
 
 If an `<optional_constraint>` is provided, construct your Ukrainian sentence so the German translation naturally incorporates the specified German word, phrase, or grammatical structure. The constraint should be integrated naturally without forcing awkward constructions.
 
 If no optional constraint is provided, you can ignore this requirement.
 
-### Requirement 5: Thematic Scenario (Optional)
+### Requirement 6: Thematic Scenario (Optional)
 
 If a `sentence_theme` is provided, create your sentence within this logical thematic context.
 Each theme provides a coherent scenario with naturally related characters, settings, objects, and actions.
 
 If no theme is provided, create a sentence using diverse vocabulary without specific thematic constraints, ensuring variety in your word choices.
 
-### Requirement 6: Diversity from Recent Sentences
+### Requirement 7: Diversity from Recent Sentences
 
 **CRITICAL DIVERSITY REQUIREMENT**: If `<recent_sentences>` are provided, you MUST create a sentence that is clearly different from all of them. Analyze the recent sentences and ensure your new sentence differs in:
 
@@ -152,6 +172,12 @@ For the required sentence type:
   - If "kein": Plan to use appropriate Ukrainian noun negation ("немає" + genitive, "жоден/жодна/жодне/жодні", "ніякий/ніяка/ніяке/ніякі", or "ані" + genitive)
   - Explain your choice and how it will map to the German structure
 
+**Step 5a: Plan Pronoun Capitalization** (if applicable)
+If your sentence uses second-person pronouns:
+- Decide whether you're using formal address (Ви → Sie) or informal plural (ви → ihr)
+- Plan appropriate capitalization: "Ви" for polite form, "ви" for informal plural
+- Ensure the choice matches the context and proficiency level
+
 **Step 6: Plan Optional Constraint Integration** (if provided)
 If an `<optional_constraint>` is provided:
 - Explain exactly how it will appear in the German translation
@@ -164,6 +190,7 @@ If no constraint is provided, note that this step does not apply.
 - Draft your Ukrainian sentence ensuring it follows your thematic scenario (if any)
 - Ensure the sentence will produce the expected German translation with the target tense
 - **For negative sentences**: Verify your negation choice matches your planning from Step 5
+- **For pronoun sentences**: Verify proper capitalization matches your planning from Step 5a
 - Double-check diversity from recent sentences
 
 **Step 8: Verify Requirements**
@@ -172,6 +199,7 @@ If no constraint is provided, note that this step does not apply.
 - **If B1/B2**: Confirm maximum 1 subordinate clause
 - Confirm sentence type matching (affirmative/interrogative/negative)
 - **For negative sentences**: Verify that your Ukrainian negation pattern will clearly indicate whether to use "nicht" or "kein" in German
+- **For pronoun sentences**: Verify that pronoun capitalization clearly indicates polite vs. informal form
 - **Diversity check**: Confirm your sentence is sufficiently different from recent sentences
 - **Logic check**: Ensure your sentence makes realistic sense and avoids absurd combinations
 - If theme provided, verify the sentence fits logically within that thematic context
@@ -181,6 +209,7 @@ If no constraint is provided, note that this step does not apply.
 - Review your Ukrainian sentence one final time
 - Confirm it will produce a grammatically correct, natural-sounding German translation appropriate for the proficiency level
 - **For negative sentences**: Double-check that the negation type is unambiguous
+- **For pronoun sentences**: Double-check that pronoun capitalization is correct and unambiguous
 - Ensure it provides fresh, engaging content for the learner
 
 ## Output Format
@@ -188,7 +217,7 @@ If no constraint is provided, note that this step does not apply.
 You must output a single valid JSON object. Do not include markdown formatting (like ```json). The JSON must have the following schema:
 
 {
-  "thought_process": "Your step-by-step planning (Step 1-9 logic). Explain how you matched the level, tense, constraints, and ensured diversity from recent sentences. For negative sentences, clearly state whether you're targeting 'nicht' or 'kein' and why.",
+  "thought_process": "Your step-by-step planning (Step 1-9 logic). Explain how you matched the level, tense, constraints, and ensured diversity from recent sentences. For negative sentences, clearly state whether you're targeting 'nicht' or 'kein' and why. For pronoun sentences, explain your capitalization choice for polite vs. informal forms.",
   "ukrainian_sentence": "The final Ukrainian sentence for the user to translate.",
   "target_german_reference": "The intended German translation that fits all grammatical constraints perfectly. This serves as the 'gold standard' answer.",
 }
