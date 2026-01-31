@@ -1,5 +1,8 @@
 """AI module for checking grammar in user's German messages during roleplay."""
 
+import os
+from functools import cache
+
 from google import genai
 from pydantic import BaseModel, Field
 from rich import print as rprint
@@ -8,10 +11,16 @@ from rich.pretty import Pretty
 
 from deutsch_tg_bot.config import settings
 from deutsch_tg_bot.deutsh_enums import DeutschLevel
+from deutsch_tg_bot.utils.prompt_utils import (
+    load_prompt_template_from_file,
+    replace_promt_placeholder,
+)
 
 genai_client = genai.Client(api_key=settings.GOOGLE_API_KEY).aio
 
 GOOGLE_MODEL = "gemini-2.5-flash"
+
+PROMPTS_DIR = os.path.join(os.path.dirname(__file__), "prompts")
 
 
 class GrammarCheckResult(BaseModel):
@@ -30,26 +39,11 @@ class GrammarCheckResult(BaseModel):
     )
 
 
-GRAMMAR_CHECK_PROMPT = """Du bist ein Deutsch-Grammatikprüfer für ukrainische Lernende auf Niveau {level}.
-
-Analysiere den folgenden deutschen Satz und prüfe auf:
-1. Grammatikfehler (Kasus, Genus, Verbkonjugation, Wortstellung)
-2. Rechtschreibfehler
-3. Unpassende Wörter für das Niveau
-
-WICHTIGE REGELN:
-- Sei KURZ und FREUNDLICH - maximal 1-2 Sätze Feedback
-- Erwähne NUR die wichtigsten Fehler
-- Wenn der Satz verständlich und für das Niveau akzeptabel ist, melde KEINE Fehler
-- Kleinere Tippfehler ignorieren, wenn der Sinn klar ist
-- Feedback auf UKRAINISCH geben
-- Sei ermutigend, nicht kritisch
-
-Der zu prüfende Satz:
-"{user_text}"
-
-Kontext der Situation (für Verständnis):
-{situation_context}"""
+@cache
+def get_grammar_check_prompt_template() -> str:
+    return replace_promt_placeholder(
+        load_prompt_template_from_file(PROMPTS_DIR, "grammar_check.txt")
+    )
 
 
 async def check_grammar_with_ai(
@@ -57,11 +51,13 @@ async def check_grammar_with_ai(
     level: DeutschLevel,
     situation_context: str,
 ) -> GrammarCheckResult:
-    prompt = GRAMMAR_CHECK_PROMPT.format(
-        level=level.value,
-        user_text=user_text,
-        situation_context=situation_context,
-    )
+    prompt_template = get_grammar_check_prompt_template()
+    prompt_params = {
+        "level": level.value,
+        "user_text": user_text,
+        "situation_context": situation_context,
+    }
+    prompt = prompt_template % prompt_params
 
     response = await genai_client.models.generate_content(
         model=GOOGLE_MODEL,

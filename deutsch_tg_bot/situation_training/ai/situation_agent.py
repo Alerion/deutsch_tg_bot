@@ -1,5 +1,8 @@
 """AI agent for generating character responses in roleplay situations."""
 
+import os
+from functools import cache
+
 from google import genai
 from google.genai import chats
 from pydantic import BaseModel, Field
@@ -10,10 +13,16 @@ from rich.pretty import Pretty
 from deutsch_tg_bot.config import settings
 from deutsch_tg_bot.deutsh_enums import DeutschLevel
 from deutsch_tg_bot.situation_training.situations import Situation
+from deutsch_tg_bot.utils.prompt_utils import (
+    load_prompt_template_from_file,
+    replace_promt_placeholder,
+)
 
 genai_client = genai.Client(api_key=settings.GOOGLE_API_KEY).aio
 
 GOOGLE_MODEL = "gemini-2.5-flash"
+
+PROMPTS_DIR = os.path.join(os.path.dirname(__file__), "prompts")
 
 
 class CharacterResponse(BaseModel):
@@ -30,25 +39,21 @@ class CharacterResponse(BaseModel):
 
 def _build_system_prompt(situation: Situation, level: DeutschLevel) -> str:
     """Build the system prompt for the character."""
-    return f"""Du bist ein Charakter in einem Deutsch-Lernspiel für Ukrainer.
-Deine Rolle: {situation.character_role}
-Situation: {situation.name_de}
+    prompt_template = get_character_system_prompt_template()
+    prompt_params = {
+        "character_role": situation.character_role,
+        "situation_name": situation.name_de,
+        "scenario_prompt": situation.scenario_prompt,
+        "level": level.value,
+    }
+    return prompt_template % prompt_params
 
-{situation.scenario_prompt}
 
-WICHTIGE REGELN:
-1. Sprich NUR auf Deutsch. Benutze NIEMALS Ukrainisch oder Englisch.
-2. Passe dein Sprachniveau an das Niveau {level.value} an.
-3. Halte deine Antworten kurz und natürlich (1-3 Sätze).
-4. Bleibe in deiner Rolle. Du bist NICHT ein Sprachlehrer.
-5. Wenn der Benutzer Fehler macht, verstehe ihn trotzdem und antworte normal.
-6. Führe das Gespräch natürlich weiter, stelle Fragen wenn passend.
-7. Wenn das Gespräch ein natürliches Ende erreicht (z.B. Verabschiedung, Transaktion abgeschlossen),
-   setze is_conversation_complete auf true.
-
-Antworte IMMER im JSON-Format mit den Feldern:
-- german_response: Deine Antwort auf Deutsch
-- is_conversation_complete: true/false"""
+@cache
+def get_character_system_prompt_template() -> str:
+    return replace_promt_placeholder(
+        load_prompt_template_from_file(PROMPTS_DIR, "character_system_prompt.txt")
+    )
 
 
 async def generate_situation_intro(
