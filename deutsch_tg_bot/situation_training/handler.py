@@ -23,6 +23,9 @@ from deutsch_tg_bot.situation_training.ai.situation_agent import (
     generate_character_response,
     generate_situation_intro,
 )
+from deutsch_tg_bot.situation_training.ai.situation_generator import (
+    generate_situation_from_description,
+)
 from deutsch_tg_bot.situation_training.situations import (
     SITUATIONS,
     Situation,
@@ -34,7 +37,10 @@ from deutsch_tg_bot.user_session import UserSession
 # States for situation training
 SELECT_SITUATION = 10
 ROLEPLAY_CONVERSATION = 11
+CUSTOM_SITUATION_INPUT = 12
 END = ConversationHandler.END
+
+CUSTOM_SITUATION_BUTTON = "✨ Власна ситуація"
 
 
 async def start_situation_selection(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -58,6 +64,9 @@ async def start_situation_selection(update: Update, context: ContextTypes.DEFAUL
         if len(row) == 2 or i == len(available_situations) - 1:
             buttons.append(row)
             row = []
+
+    # Add custom situation button at the end
+    buttons.append([CUSTOM_SITUATION_BUTTON])
 
     keyboard = ReplyKeyboardMarkup(
         buttons,
@@ -89,6 +98,20 @@ async def handle_situation_selection(update: Update, context: ContextTypes.DEFAU
         raise ValueError("Expected level in user_session")
 
     selected_name = update.message.text.strip()
+
+    # Check if user selected custom situation
+    if selected_name == CUSTOM_SITUATION_BUTTON:
+        await update.message.reply_text(
+            "Опишіть ситуацію, яку хочете потренувати.\n\n"
+            "<i>Наприклад:</i>\n"
+            "• Розмова з механіком про ремонт машини\n"
+            "• Замовлення піци по телефону\n"
+            "• Запис до перукаря\n"
+            "• Скарга на шумних сусідів",
+            reply_markup=ReplyKeyboardRemove(),
+            parse_mode="HTML",
+        )
+        return CUSTOM_SITUATION_INPUT
 
     # Find the selected situation
     selected_situation: Situation | None = None
@@ -133,6 +156,53 @@ async def handle_situation_selection(update: Update, context: ContextTypes.DEFAU
         )
         intro_task = asyncio.create_task(
             generate_situation_intro(selected_situation, user_session.level)
+        )
+
+        scene_state, (intro_message, chat) = await asyncio.gather(scene_state_task, intro_task)
+        user_session.scene_state = scene_state
+        user_session.situation_chat = chat
+
+    await update.message.reply_text(
+        intro_message,
+        reply_markup=ReplyKeyboardRemove(),
+        parse_mode="HTML",
+    )
+
+    return ROLEPLAY_CONVERSATION
+
+
+async def handle_custom_situation_input(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Handle user's custom situation description and start the roleplay."""
+    if update.message is None or update.message.text is None:
+        raise ValueError("Expected a message in update")
+    if context.user_data is None:
+        raise ValueError("Expected user_data in context")
+
+    user_session = cast(UserSession, context.user_data["session"])
+    if user_session.level is None:
+        raise ValueError("Expected level in user_session")
+
+    user_description = update.message.text.strip()
+
+    async with progress(update, "Створюю ситуацію"):
+        # Generate situation from description
+        custom_situation = await generate_situation_from_description(
+            user_description,
+            user_session.level,
+        )
+
+        # Initialize the situation (same as predefined)
+        user_session.current_situation = custom_situation
+        user_session.situation_message_count = 0
+        user_session.last_narrator_event_index = 0
+        user_session.recent_dialogue = []
+
+        # Generate initial scene state and situation intro in parallel
+        scene_state_task = asyncio.create_task(
+            generate_initial_scene_state(custom_situation, user_session.level)
+        )
+        intro_task = asyncio.create_task(
+            generate_situation_intro(custom_situation, user_session.level)
         )
 
         scene_state, (intro_message, chat) = await asyncio.gather(scene_state_task, intro_task)
@@ -298,6 +368,9 @@ situation_training_handler = ConversationHandler(
     states={
         SELECT_SITUATION: [
             MessageHandler(filters.TEXT & ~filters.COMMAND, handle_situation_selection)
+        ],
+        CUSTOM_SITUATION_INPUT: [
+            MessageHandler(filters.TEXT & ~filters.COMMAND, handle_custom_situation_input)
         ],
         ROLEPLAY_CONVERSATION: [
             CommandHandler("end", end_situation),
