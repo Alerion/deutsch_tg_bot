@@ -57,16 +57,6 @@ async def check_grammar_with_ai(
     level: DeutschLevel,
     situation_context: str,
 ) -> GrammarCheckResult:
-    """Check grammar in user's German text.
-
-    Args:
-        user_text: The user's German message to check
-        level: The user's German level (determines strictness)
-        situation_context: Brief description of the situation for context
-
-    Returns:
-        GrammarCheckResult with feedback if errors found
-    """
     prompt = GRAMMAR_CHECK_PROMPT.format(
         level=level.value,
         user_text=user_text,

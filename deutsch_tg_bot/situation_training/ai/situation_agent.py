@@ -55,11 +55,6 @@ async def generate_situation_intro(
     situation: Situation,
     level: DeutschLevel,
 ) -> tuple[str, chats.AsyncChat]:
-    """Generate the initial situation introduction and create the chat session.
-
-    Returns:
-        Tuple of (intro_message, chat_session)
-    """
     system_prompt = _build_system_prompt(situation, level)
 
     # Create a chat session with the system prompt as context
@@ -108,17 +103,6 @@ async def generate_character_response(
     situation: Situation,
     level: DeutschLevel,
 ) -> tuple[CharacterResponse, chats.AsyncChat]:
-    """Generate the character's response to the user's message.
-
-    Args:
-        user_message: The user's message in German
-        chat: The existing chat session
-        situation: The current situation
-        level: The user's German level
-
-    Returns:
-        Tuple of (character_response, updated_chat)
-    """
     # Send the user's message and get the character's response
     response = await chat.send_message(
         f"Der Benutzer (auf Niveau {level.value}) sagt: {user_message}"
