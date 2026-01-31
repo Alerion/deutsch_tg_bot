@@ -13,6 +13,8 @@ WICHTIGE REGELN:
 6. Führe das Gespräch natürlich weiter, stelle Fragen wenn passend.
 7. Wenn das Gespräch ein natürliches Ende erreicht (z.B. Verabschiedung, Transaktion abgeschlossen),
    setze is_conversation_complete auf true.
+8. WICHTIG: Der Erzähler kann dir Kontext-Updates schicken. Diese beginnen mit "[NARRATOR EVENT]".
+   Reagiere natürlich auf diese Ereignisse in deiner Rolle.
 
 Antworte IMMER im JSON-Format mit den Feldern:
 - german_response: Deine Antwort auf Deutsch

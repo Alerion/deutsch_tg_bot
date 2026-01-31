@@ -14,6 +14,11 @@ from telegram.ext import (
 
 from deutsch_tg_bot.command_handlers.stop import stop_command
 from deutsch_tg_bot.situation_training.ai.grammar_checker import check_grammar_with_ai
+from deutsch_tg_bot.situation_training.ai.narrator_agent import (
+    generate_initial_scene_state,
+    generate_narrator_event,
+    should_trigger_narrator,
+)
 from deutsch_tg_bot.situation_training.ai.situation_agent import (
     generate_character_response,
     generate_situation_intro,
@@ -118,12 +123,20 @@ async def handle_situation_selection(update: Update, context: ContextTypes.DEFAU
     # Initialize the situation
     user_session.current_situation = selected_situation
     user_session.situation_message_count = 0
+    user_session.last_narrator_event_index = 0
+    user_session.recent_dialogue = []
 
     async with progress(update, "Готую ситуацію"):
-        intro_message, chat = await generate_situation_intro(
-            selected_situation,
-            user_session.level,
+        # Generate initial scene state and situation intro in parallel
+        scene_state_task = asyncio.create_task(
+            generate_initial_scene_state(selected_situation, user_session.level)
         )
+        intro_task = asyncio.create_task(
+            generate_situation_intro(selected_situation, user_session.level)
+        )
+
+        scene_state, (intro_message, chat) = await asyncio.gather(scene_state_task, intro_task)
+        user_session.scene_state = scene_state
         user_session.situation_chat = chat
 
     await update.message.reply_text(
@@ -153,7 +166,17 @@ async def handle_roleplay_message(update: Update, context: ContextTypes.DEFAULT_
     user_message = update.message.text.strip()
     user_session.situation_message_count += 1
 
-    # Run grammar check and character response in parallel
+    # Track dialogue for narrator
+    user_session.recent_dialogue.append(("User", user_message))
+
+    # Check if narrator should trigger
+    narrator_context: str | None = None
+    trigger_narrator = should_trigger_narrator(
+        user_session.situation_message_count,
+        user_session.last_narrator_event_index,
+    )
+
+    # Run grammar check in parallel with other operations
     grammar_task = asyncio.create_task(
         check_grammar_with_ai(
             user_message,
@@ -162,22 +185,47 @@ async def handle_roleplay_message(update: Update, context: ContextTypes.DEFAULT_
         )
     )
 
-    character_task = asyncio.create_task(
-        generate_character_response(
+    async with progress(update, "Обробляю відповідь"):
+        # If narrator triggers, generate event first
+        if trigger_narrator and user_session.scene_state:
+            narrator_event = await generate_narrator_event(
+                user_session.current_situation,
+                user_session.level,
+                user_session.scene_state,
+                user_session.recent_dialogue[-6:],  # Last 6 messages
+            )
+
+            # Update state
+            user_session.scene_state = narrator_event.updated_state
+            user_session.last_narrator_event_index = user_session.situation_message_count
+            user_session.recent_dialogue = []  # Reset dialogue tracking
+            narrator_context = narrator_event.event_context_for_npc
+
+            # Send narrator event to user if there's a description
+            if narrator_event.event_description_de.strip():
+                await update.message.reply_text(
+                    f"📖 <i>{narrator_event.event_description_de}</i>",
+                    parse_mode="HTML",
+                )
+
+        # Generate character response with narrator context if available
+        character_response, updated_chat = await generate_character_response(
             user_message,
             user_session.situation_chat,
             user_session.current_situation,
             user_session.level,
+            scene_state=user_session.scene_state,
+            narrator_context=narrator_context,
         )
-    )
 
-    # Wait for both tasks
-    async with progress(update, "Обробляю відповідь"):
-        grammar_result, (character_response, updated_chat) = await asyncio.gather(
-            grammar_task, character_task
-        )
+        grammar_result = await grammar_task
 
     user_session.situation_chat = updated_chat
+
+    # Track NPC response in dialogue
+    user_session.recent_dialogue.append(
+        (user_session.current_situation.character_role, character_response.german_response)
+    )
 
     # Send grammar feedback first (as reply to user's message) if there are errors
     if grammar_result.has_errors and grammar_result.brief_feedback:
@@ -203,13 +251,21 @@ async def handle_roleplay_message(update: Update, context: ContextTypes.DEFAULT_
         )
         await update.message.reply_text(character_msg, parse_mode="HTML")
         # Reset situation state
-        user_session.current_situation = None
-        user_session.situation_chat = None
-        user_session.situation_message_count = 0
+        _reset_situation_state(user_session)
         return END
 
     await update.message.reply_text(character_msg, parse_mode="HTML")
     return ROLEPLAY_CONVERSATION
+
+
+def _reset_situation_state(user_session: UserSession) -> None:
+    """Reset all situation-related state."""
+    user_session.current_situation = None
+    user_session.situation_chat = None
+    user_session.situation_message_count = 0
+    user_session.scene_state = None
+    user_session.last_narrator_event_index = 0
+    user_session.recent_dialogue = []
 
 
 async def end_situation(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -224,9 +280,7 @@ async def end_situation(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     message_count = user_session.situation_message_count
 
     # Reset situation state
-    user_session.current_situation = None
-    user_session.situation_chat = None
-    user_session.situation_message_count = 0
+    _reset_situation_state(user_session)
 
     await update.message.reply_text(
         f"Ситуацію завершено.\n"

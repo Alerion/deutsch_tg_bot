@@ -1,0 +1,18 @@
+Aktueller Zustand der Szene:
+{{current_scene_state}}
+
+Letzte Nachrichten im Dialog:
+{{recent_dialogue}}
+
+Basierend auf dem aktuellen Zustand und dem bisherigen Dialog, generiere ein INTERESSANTES EREIGNIS, das die Situation verändert.
+
+Das Ereignis sollte:
+- Die Konversation in eine neue Richtung lenken
+- Den Benutzer herausfordern, aber nicht frustrieren
+- Realistisch für diese Situation sein
+- Neue Gesprächsmöglichkeiten eröffnen
+
+Gib zurück:
+1. updated_state: Der neue Zustand der Szene (aktualisiere nur die relevanten Felder)
+2. event_description_de: Eine kurze, atmosphärische Beschreibung auf Deutsch (1-2 Sätze)
+3. event_context_for_npc: Instruktionen für den Charakter auf Englisch, wie er reagieren soll

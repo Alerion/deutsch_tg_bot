@@ -1,0 +1,19 @@
+Erstelle den Anfangszustand für folgende Rollenspiel-Situation:
+
+Situation: {{situation_name}}
+Charakter: {{character_role}}
+Rolle des Benutzers: {{user_role}}
+Sprachniveau: {{level}}
+
+Szenario-Details:
+{{scenario_prompt}}
+
+Generiere einen realistischen Anfangszustand mit:
+1. location: Wo findet die Szene statt (auf Deutsch, kurz)
+2. situation_summary: Was ist die Ausgangssituation (auf Deutsch, 1-2 Sätze)
+3. available_items_for_situation: Liste von Dingen/Dienstleistungen, die in dieser Situation relevant sind
+   (z.B. für Bäckerei: verschiedene Brotsorten, Kuchen, Brötchen)
+4. time_context: Tageszeit oder relevanter Zeitkontext
+5. special_conditions: Besondere Umstände (z.B. "Es ist Samstag, viele Kunden")
+
+Die Items sollten zum Szenario passen und dem Benutzer Gesprächsmöglichkeiten bieten.

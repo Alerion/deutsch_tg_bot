@@ -12,6 +12,7 @@ from deutsch_tg_bot.deutsh_enums import DeutschLevel, DeutschTense, SentenceType
 from deutsch_tg_bot.utils.random_selector import BalancedRandomSelector
 
 if TYPE_CHECKING:
+    from deutsch_tg_bot.situation_training.scene_state import SceneState
     from deutsch_tg_bot.situation_training.situations import Situation
     from deutsch_tg_bot.translation_training.ai.translation_evaluation import (
         TranslationEvaluationResult,
@@ -44,3 +45,6 @@ class UserSession:
     current_situation: Situation | None = None
     situation_chat: chats.AsyncChat | None = None
     situation_message_count: int = 0
+    scene_state: SceneState | None = None
+    last_narrator_event_index: int = 0
+    recent_dialogue: list[tuple[str, str]] = field(default_factory=list)

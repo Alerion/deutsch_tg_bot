@@ -12,6 +12,7 @@ from rich.pretty import Pretty
 
 from deutsch_tg_bot.config import settings
 from deutsch_tg_bot.deutsh_enums import DeutschLevel
+from deutsch_tg_bot.situation_training.scene_state import SceneState
 from deutsch_tg_bot.situation_training.situations import Situation
 from deutsch_tg_bot.utils.prompt_utils import (
     load_prompt_template_from_file,
@@ -107,11 +108,29 @@ async def generate_character_response(
     chat: chats.AsyncChat,
     situation: Situation,
     level: DeutschLevel,
+    scene_state: SceneState | None = None,
+    narrator_context: str | None = None,
 ) -> tuple[CharacterResponse, chats.AsyncChat]:
+    message_parts = []
+
+    if scene_state:
+        message_parts.append(
+            f"[SCENE STATE]\n"
+            f"Location: {scene_state.location}\n"
+            f"Situation: {scene_state.situation_summary}\n"
+            f"Available: {', '.join(scene_state.available_items) if scene_state.available_items else 'N/A'}\n"
+            f"Challenges: {', '.join(scene_state.current_challenges) if scene_state.current_challenges else 'None'}"
+        )
+
+    if narrator_context:
+        message_parts.append(f"[NARRATOR EVENT] {narrator_context}")
+
+    message_parts.append(f"Der Benutzer (auf Niveau {level.value}) sagt: {user_message}")
+
+    full_message = "\n\n".join(message_parts)
+
     # Send the user's message and get the character's response
-    response = await chat.send_message(
-        f"Der Benutzer (auf Niveau {level.value}) sagt: {user_message}"
-    )
+    response = await chat.send_message(full_message)
 
     response_text = (response.text or "").strip()
 
