@@ -20,31 +20,34 @@ if TYPE_CHECKING:
 
 
 class TrainingType(str, Enum):
-    """Available training types."""
-
     TRANSLATION = "translation"
     SITUATION = "situation"
 
 
 @dataclass
-class UserSession:
-    # Common fields
-    level: DeutschLevel | None = None
-    training_type: TrainingType | None = None
-
-    # Translation training fields
+class SentenceTranslationState:
+    random_tense_selector: BalancedRandomSelector[DeutschTense]
+    random_sentence_type_selector: BalancedRandomSelector[SentenceType]
     sentences_history: list[Sentence] = field(default_factory=list)
-    random_tense_selector: BalancedRandomSelector[DeutschTense] | None = None
-    random_sentence_type_selector: BalancedRandomSelector[SentenceType] | None = None
     sentence_constraint: str | None = None
     genai_chat: chats.AsyncChat | None = None
     last_translation_check_result: TranslationEvaluationResult | None = None
     new_sentence_generation_task: asyncio.Task[Sentence] | None = None
 
-    # Situation training fields
-    current_situation: Situation | None = None
-    situation_chat: chats.AsyncChat | None = None
+
+@dataclass
+class SituationTrainingState:
+    current_situation: Situation
+    situation_chat: chats.AsyncChat
+    scene_state: SceneState
     situation_message_count: int = 0
-    scene_state: SceneState | None = None
     last_narrator_event_index: int = 0
     recent_dialogue: list[tuple[str, str]] = field(default_factory=list)
+
+
+@dataclass
+class UserSession:
+    deutsch_level: DeutschLevel
+
+    sentence_translation: SentenceTranslationState | None = None
+    situation_training: SituationTrainingState | None = None

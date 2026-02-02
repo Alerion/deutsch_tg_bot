@@ -37,27 +37,6 @@ class InitialSceneState(BaseModel):
     )
 
 
-@cache
-def get_narrator_system_prompt_template() -> str:
-    return replace_promt_placeholder(
-        load_prompt_template_from_file(PROMPTS_DIR, "narrator_system_prompt.txt")
-    )
-
-
-@cache
-def get_narrator_event_prompt_template() -> str:
-    return replace_promt_placeholder(
-        load_prompt_template_from_file(PROMPTS_DIR, "narrator_event_prompt.txt")
-    )
-
-
-@cache
-def get_initial_scene_prompt_template() -> str:
-    return replace_promt_placeholder(
-        load_prompt_template_from_file(PROMPTS_DIR, "initial_scene_prompt.txt")
-    )
-
-
 async def generate_initial_scene_state(
     situation: Situation,
     level: DeutschLevel,
@@ -83,19 +62,10 @@ async def generate_initial_scene_state(
 
     response_text = (response.text or "").strip()
 
-    try:
-        initial_state = InitialSceneState.model_validate_json(response_text)
-        scene_state = initial_state.scene_state
-        if initial_state.available_items_for_situation:
-            scene_state.available_items = initial_state.available_items_for_situation
-    except Exception:
-        scene_state = SceneState(
-            location=situation.name_de,
-            situation_summary=situation.user_role_uk,
-            available_items=[],
-            current_challenges=[],
-            time_context="",
-        )
+    initial_state = InitialSceneState.model_validate_json(response_text)
+    scene_state = initial_state.scene_state
+    if initial_state.available_items_for_situation:
+        scene_state.available_items = initial_state.available_items_for_situation
 
     if settings.SHOW_FULL_AI_RESPONSE:
         rprint(
@@ -140,18 +110,7 @@ async def generate_narrator_event(
     )
 
     response_text = (response.text or "").strip()
-
-    try:
-        narrator_event = NarratorEvent.model_validate_json(response_text)
-    except Exception as e:
-        if settings.SHOW_FULL_AI_RESPONSE:
-            rprint(f"[red]Narrator event parsing failed: {e}[/red]")
-            rprint(f"[red]Response: {response_text}[/red]")
-        narrator_event = NarratorEvent(
-            updated_state=current_scene_state,
-            event_description_de="",
-            event_context_for_npc="",
-        )
+    narrator_event = NarratorEvent.model_validate_json(response_text)
 
     if settings.SHOW_FULL_AI_RESPONSE:
         rprint(
@@ -159,6 +118,7 @@ async def generate_narrator_event(
                 Pretty(
                     {
                         "event_de": narrator_event.event_description_de,
+                        "event_uk": narrator_event.event_description_uk,
                         "npc_context": narrator_event.event_context_for_npc,
                         "updated_state": narrator_event.updated_state.model_dump(),
                     },
@@ -170,6 +130,27 @@ async def generate_narrator_event(
         )
 
     return narrator_event
+
+
+@cache
+def get_narrator_system_prompt_template() -> str:
+    return replace_promt_placeholder(
+        load_prompt_template_from_file(PROMPTS_DIR, "narrator_system_prompt.txt")
+    )
+
+
+@cache
+def get_narrator_event_prompt_template() -> str:
+    return replace_promt_placeholder(
+        load_prompt_template_from_file(PROMPTS_DIR, "narrator_event_prompt.txt")
+    )
+
+
+@cache
+def get_initial_scene_prompt_template() -> str:
+    return replace_promt_placeholder(
+        load_prompt_template_from_file(PROMPTS_DIR, "initial_scene_prompt.txt")
+    )
 
 
 def should_trigger_narrator(message_count: int, last_narrator_index: int) -> bool:

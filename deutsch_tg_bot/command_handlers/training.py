@@ -12,9 +12,12 @@ from telegram.ext import (
 from deutsch_tg_bot.command_handlers.stop import stop_command
 from deutsch_tg_bot.config import settings
 from deutsch_tg_bot.deutsh_enums import DEUTCH_LEVEL_TENSES, DeutschLevel, SentenceTypeProbabilities
-from deutsch_tg_bot.situation_training.handler import situation_training_handler
+from deutsch_tg_bot.situation_training.handler import (
+    situation_training_handler,
+    start_situation_selection,
+)
 from deutsch_tg_bot.translation_training.handler import translation_training_handler
-from deutsch_tg_bot.user_session import TrainingType, UserSession
+from deutsch_tg_bot.user_session import SentenceTranslationState, TrainingType, UserSession
 from deutsch_tg_bot.utils.random_selector import BalancedRandomSelector
 
 STORE_LEVEL = 1
@@ -32,12 +35,12 @@ TRAINING_TYPE_NAMES = {
 
 
 async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    if update.message is None or update.message.text is None:
-        raise ValueError("Expected a message in update")
+    # TODO: Validate username and allow access only for whitelisted users
+    # print(update.effective_user.username)
+    if update.message is None or update.message.text is None or context.user_data is None:
+        raise ValueError("Invalid update")
 
-    if context.user_data is None:
-        raise ValueError("Expected user_data in context")
-    context.user_data["session"] = UserSession()
+    context.user_data["session"] = None
 
     await update.message.reply_text(
         "Привіт! Я твій бот для вивчення німецької мови. Будь ласка, обери свій поточний рівень німецької:",
@@ -48,15 +51,11 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
 
 
 async def store_level(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    if update.message is None or update.message.text is None:
-        raise ValueError("Expected a message in update")
-
-    if context.user_data is None:
-        raise ValueError("Expected user_data in context")
-    user_session = cast(UserSession, context.user_data["session"])
+    if update.message is None or update.message.text is None or context.user_data is None:
+        raise ValueError("Invalid update")
 
     try:
-        user_session.level = DeutschLevel(update.message.text)
+        deutsch_level = DeutschLevel(update.message.text)
     except ValueError:
         await update.message.reply_text(
             "Обрано невірний рівень. Будь ласка, обери правильний рівень німецької з клавіатури.",
@@ -64,19 +63,12 @@ async def store_level(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         )
         return STORE_LEVEL
 
-    # Initialize random selectors for translation training
-    user_session.random_tense_selector = BalancedRandomSelector(
-        items=DEUTCH_LEVEL_TENSES[user_session.level],
-    )
-    user_session.random_sentence_type_selector = BalancedRandomSelector(
-        items=list(SentenceTypeProbabilities.keys()),
-        weights=list(SentenceTypeProbabilities.values()),
-    )
+    user_session = UserSession(deutsch_level=deutsch_level)
+    context.user_data["session"] = user_session
 
     # Ask for training type
     await update.message.reply_text(
-        f"Чудово! Твій рівень німецької: <b>{user_session.level.value}</b>\n\n"
-        "Обери тип тренування:",
+        f"Чудово! Твій рівень німецької: <b>{deutsch_level.value}</b>\n\nОбери тип тренування:",
         reply_markup=get_training_type_keyboard(),
         parse_mode="HTML",
     )
@@ -85,12 +77,8 @@ async def store_level(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
 
 
 async def select_training_type(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    if update.message is None or update.message.text is None:
-        raise ValueError("Expected a message in update")
-
-    if context.user_data is None:
-        raise ValueError("Expected user_data in context")
-    user_session = cast(UserSession, context.user_data["session"])
+    if update.message is None or update.message.text is None or context.user_data is None:
+        raise ValueError("Invalid update")
 
     selected_text = update.message.text.strip()
 
@@ -108,15 +96,21 @@ async def select_training_type(update: Update, context: ContextTypes.DEFAULT_TYP
         )
         return SELECT_TRAINING_TYPE
 
-    user_session.training_type = selected_type
+    user_session = cast(UserSession, context.user_data["session"])
 
     if selected_type == TrainingType.SITUATION:
-        # Go directly to situation selection
-        await update.message.reply_text(
-            "Обрано рольову гру!\nВведи /situation щоб обрати ситуацію для практики.",
-            reply_markup=ReplyKeyboardRemove(),
-        )
+        await start_situation_selection(update, context)
         return TRAINING_SESSION
+    elif selected_type == TrainingType.TRANSLATION:
+        user_session.sentence_translation = SentenceTranslationState(
+            random_tense_selector=BalancedRandomSelector(
+                items=DEUTCH_LEVEL_TENSES[user_session.deutsch_level],
+            ),
+            random_sentence_type_selector=BalancedRandomSelector(
+                items=list(SentenceTypeProbabilities.keys()),
+                weights=list(SentenceTypeProbabilities.values()),
+            ),
+        )
 
     # Translation training - ask for sentence constraints
     if settings.DEV_SKIP_SENTENCE_CONSTRAINT:
@@ -137,18 +131,17 @@ async def select_training_type(update: Update, context: ContextTypes.DEFAULT_TYP
 
 
 async def store_sentence_constraint(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    if update.message is None or update.message.text is None:
-        raise ValueError("Expected a message in update")
+    if update.message is None or update.message.text is None or context.user_data is None:
+        raise ValueError("Invalid update")
 
-    if context.user_data is None:
-        raise ValueError("Expected user_data in context")
     user_session = cast(UserSession, context.user_data["session"])
+    assert user_session.sentence_translation is not None
     message_text = update.message.text.strip()
 
     if message_text and message_text != "/skip":
-        user_session.sentence_constraint = update.message.text.strip()
+        user_session.sentence_translation.sentence_constraint = update.message.text.strip()
         await update.message.reply_text(
-            f"Правила збережено: {user_session.sentence_constraint}\n"
+            f"Правила збережено: {user_session.sentence_translation.sentence_constraint}\n"
             "Введи /next, щоб отримати перше завдання."
         )
     else:

@@ -39,13 +39,6 @@ class GrammarCheckResult(BaseModel):
     )
 
 
-@cache
-def get_grammar_check_prompt_template() -> str:
-    return replace_promt_placeholder(
-        load_prompt_template_from_file(PROMPTS_DIR, "grammar_check.txt")
-    )
-
-
 async def check_grammar_with_ai(
     user_text: str,
     level: DeutschLevel,
@@ -70,12 +63,7 @@ async def check_grammar_with_ai(
     )
 
     response_text = (response.text or "").strip()
-
-    try:
-        result = GrammarCheckResult.model_validate_json(response_text)
-    except Exception:
-        # Fallback if parsing fails - assume no errors
-        result = GrammarCheckResult(has_errors=False)
+    result = GrammarCheckResult.model_validate_json(response_text)
 
     if settings.SHOW_FULL_AI_RESPONSE:
         rprint(
@@ -96,3 +84,10 @@ async def check_grammar_with_ai(
         )
 
     return result
+
+
+@cache
+def get_grammar_check_prompt_template() -> str:
+    return replace_promt_placeholder(
+        load_prompt_template_from_file(PROMPTS_DIR, "grammar_check.txt")
+    )

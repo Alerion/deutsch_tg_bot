@@ -22,4 +22,5 @@ WICHTIGE REGELN:
 3. Der Benutzer soll neue Vokabeln und Phrasen üben können
 4. Halte die Ereignisse realistisch für die Situation
 5. event_description_de: Schreibe eine kurze, lebhafte Beschreibung auf Deutsch
-6. event_context_for_npc: Erkläre dem Charakter auf Englisch, was passiert ist und wie er reagieren soll
+6. event_description_uk: Übersetze die Beschreibung ins Ukrainische (für das Verständnis des Benutzers)
+7. event_context_for_npc: Erkläre dem Charakter auf Englisch, was passiert ist und wie er reagieren soll

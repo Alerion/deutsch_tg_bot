@@ -42,6 +42,8 @@ mypy
 - **Imports**: Sorted with isort via ruff
 - **Formatting**: ruff format
 - Don't generate docstings if it is not really necessary for undertanding what is going on.
+- Never use `except Exception`! I will add myself if it is really required. It makes debugging and testing
+  very difficult if you just hide all errors.
 
 ## Architecture Patterns
 

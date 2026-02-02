@@ -33,32 +33,33 @@ END = ConversationHandler.END
 
 
 async def new_exercise(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    if update.message is None or update.message.text is None:
-        raise ValueError("Expected a message in update")
+    if update.message is None or update.message.text is None or context.user_data is None:
+        raise ValueError("Invalid update")
 
-    if context.user_data is None:
-        raise ValueError("Expected user_data in context")
     user_session = cast(UserSession, context.user_data["session"])
+    assert user_session.sentence_translation is not None
 
-    if user_session.new_sentence_generation_task is None:
-        user_session.new_sentence_generation_task = asyncio.create_task(
+    if user_session.sentence_translation.new_sentence_generation_task is None:
+        user_session.sentence_translation.new_sentence_generation_task = asyncio.create_task(
             _generate_new_sentence(context)
         )
 
-    if not user_session.new_sentence_generation_task.done():
+    if not user_session.sentence_translation.new_sentence_generation_task.done():
         async with progress(update, "Генерую нове речення"):
-            await asyncio.wait([user_session.new_sentence_generation_task])
+            await asyncio.wait([user_session.sentence_translation.new_sentence_generation_task])
 
-    new_sentence = user_session.new_sentence_generation_task.result()
-    user_session.sentences_history.append(new_sentence)
-    sentence_number = len(user_session.sentences_history)
+    new_sentence = user_session.sentence_translation.new_sentence_generation_task.result()
+    user_session.sentence_translation.sentences_history.append(new_sentence)
+    sentence_number = len(user_session.sentence_translation.sentences_history)
     message = (
         f"<b>{sentence_number}. Переклади речення:</b>\n{new_sentence.ukrainian_sentence}\n\n"
         f"<b>Час</b>: {new_sentence.tense.value}"
     )
     await update.message.reply_text(message, parse_mode="HTML")
 
-    user_session.new_sentence_generation_task = asyncio.create_task(_generate_new_sentence(context))
+    user_session.sentence_translation.new_sentence_generation_task = asyncio.create_task(
+        _generate_new_sentence(context)
+    )
     return CHECK_TRANSLATION
 
 
@@ -66,24 +67,17 @@ async def _generate_new_sentence(context: ContextTypes.DEFAULT_TYPE) -> Sentence
     if context.user_data is None:
         raise ValueError("Expected user_data in context")
     user_session = cast(UserSession, context.user_data["session"])
+    assert user_session.sentence_translation is not None
 
-    if user_session.level is None:
-        raise ValueError("Expected level in user_session")
-
-    random_tense_selector = user_session.random_tense_selector
-    if random_tense_selector is None:
-        raise ValueError("Expected random_tense_selector in user_session")
-
-    random_sentence_type_selector = user_session.random_sentence_type_selector
-    if random_sentence_type_selector is None:
-        raise ValueError("Expected random_sentence_type_selector in user_session")
+    random_tense_selector = user_session.sentence_translation.random_tense_selector
+    random_sentence_type_selector = user_session.sentence_translation.random_sentence_type_selector
 
     sentence_generator_params = get_sentence_generator_params(
-        level=user_session.level,
+        level=user_session.deutsch_level,
         tense=random_tense_selector.select(),
         sentence_type=random_sentence_type_selector.select(),
-        sentences_history=user_session.sentences_history,
-        optional_constraint=user_session.sentence_constraint,
+        sentences_history=user_session.sentence_translation.sentences_history,
+        optional_constraint=user_session.sentence_translation.sentence_constraint,
     )
     new_sentence = await generate_sentence_with_ai(sentence_generator_params)
     return new_sentence
@@ -97,22 +91,30 @@ async def check_translation(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         raise ValueError("Expected user_data in context")
 
     user_session = cast(UserSession, context.user_data["session"])
-    current_sentence = user_session.sentences_history[-1]
+    assert user_session.sentence_translation is not None
+
+    current_sentence = user_session.sentence_translation.sentences_history[-1]
     user_answer = update.message.text
 
     async with progress(update, "Перевіряю переклад"):
         check_result = await evaluate_translation_with_ai(current_sentence, user_answer)
 
-    user_session.last_translation_check_result = check_result
-    user_session.sentences_history[-1].is_translation_correct = check_result.is_translation_correct
-    user_session.sentences_history[-1].german_sentence = check_result.correct_translation
+    user_session.sentence_translation.last_translation_check_result = check_result
+    user_session.sentence_translation.sentences_history[
+        -1
+    ].is_translation_correct = check_result.is_translation_correct
+    user_session.sentence_translation.sentences_history[
+        -1
+    ].german_sentence = check_result.correct_translation
 
     correct_answers_number = sum(
-        1 for sentence in user_session.sentences_history if sentence.is_translation_correct is True
+        1
+        for sentence in user_session.sentence_translation.sentences_history
+        if sentence.is_translation_correct is True
     )
     total_result_message = (
         f"<b>Загальний результат:</b> {correct_answers_number}"
-        f" з {len(user_session.sentences_history)}"
+        f" з {len(user_session.sentence_translation.sentences_history)}"
     )
 
     if check_result.is_translation_correct:
@@ -141,19 +143,21 @@ async def answer_questions(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         raise ValueError("Expected user_data in context")
 
     user_session = cast(UserSession, context.user_data["session"])
-    if user_session.last_translation_check_result is None:
+    assert user_session.sentence_translation is not None
+
+    if user_session.sentence_translation.last_translation_check_result is None:
         raise ValueError("Expected last_translation_check_result to be initialized")
 
     user_question = update.message.text.strip()
 
-    current_sentence = user_session.sentences_history[-1]
+    current_sentence = user_session.sentence_translation.sentences_history[-1]
 
     async with progress(update, "Думаю над відповідю"):
-        ai_reply, user_session.genai_chat = await answer_question_with_ai(
+        ai_reply, user_session.sentence_translation.genai_chat = await answer_question_with_ai(
             user_question,
             current_sentence,
-            user_session.last_translation_check_result,
-            user_session.genai_chat,
+            user_session.sentence_translation.last_translation_check_result,
+            user_session.sentence_translation.genai_chat,
         )
 
     message = (

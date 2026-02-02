@@ -11,7 +11,7 @@ from rich.pretty import Pretty
 
 from deutsch_tg_bot.config import settings
 from deutsch_tg_bot.deutsh_enums import DeutschLevel
-from deutsch_tg_bot.situation_training.situations import Situation, SituationType
+from deutsch_tg_bot.situation_training.situations import Situation
 from deutsch_tg_bot.utils.prompt_utils import (
     load_prompt_template_from_file,
     replace_promt_placeholder,
@@ -70,28 +70,8 @@ async def generate_situation_from_description(
     )
 
     response_text = (response.text or "").strip()
-
-    try:
-        generated = GeneratedSituation.model_validate_json(response_text)
-    except Exception as e:
-        if settings.SHOW_FULL_AI_RESPONSE:
-            rprint(f"[red]Situation generation failed: {e}[/red]")
-            rprint(f"[red]Response: {response_text}[/red]")
-        # Fallback to a generic situation
-        generated = GeneratedSituation(
-            name_uk="Власна ситуація",
-            name_de="Eigene Situation",
-            character_role="Gesprächspartner",
-            user_role_uk="Ви учасник розмови",
-            scenario_prompt=f"""Du bist ein freundlicher Gesprächspartner in einer alltäglichen Situation.
-Der Benutzer möchte folgendes üben: {user_description}
-Sprich auf Niveau {level.value}. Sei hilfsbereit und führe ein natürliches Gespräch.""",
-            opening_message_de="Guten Tag! Wie kann ich Ihnen helfen?",
-            opening_message_uk="(Співрозмовник вітає вас)",
-        )
-
+    generated = GeneratedSituation.model_validate_json(response_text)
     situation = Situation(
-        type=SituationType.BAKERY,  # Using BAKERY as placeholder for custom
         name_uk=generated.name_uk,
         name_de=generated.name_de,
         character_role=generated.character_role,

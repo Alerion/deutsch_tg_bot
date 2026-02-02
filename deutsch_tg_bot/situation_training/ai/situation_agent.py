@@ -38,25 +38,6 @@ class CharacterResponse(BaseModel):
     )
 
 
-def _build_system_prompt(situation: Situation, level: DeutschLevel) -> str:
-    """Build the system prompt for the character."""
-    prompt_template = get_character_system_prompt_template()
-    prompt_params = {
-        "character_role": situation.character_role,
-        "situation_name": situation.name_de,
-        "scenario_prompt": situation.scenario_prompt,
-        "level": level.value,
-    }
-    return prompt_template % prompt_params
-
-
-@cache
-def get_character_system_prompt_template() -> str:
-    return replace_promt_placeholder(
-        load_prompt_template_from_file(PROMPTS_DIR, "character_system_prompt.txt")
-    )
-
-
 async def generate_situation_intro(
     situation: Situation,
     level: DeutschLevel,
@@ -103,6 +84,25 @@ async def generate_situation_intro(
     return intro_message, chat
 
 
+def _build_system_prompt(situation: Situation, level: DeutschLevel) -> str:
+    """Build the system prompt for the character."""
+    prompt_template = get_character_system_prompt_template()
+    prompt_params = {
+        "character_role": situation.character_role,
+        "situation_name": situation.name_de,
+        "scenario_prompt": situation.scenario_prompt,
+        "level": level.value,
+    }
+    return prompt_template % prompt_params
+
+
+@cache
+def get_character_system_prompt_template() -> str:
+    return replace_promt_placeholder(
+        load_prompt_template_from_file(PROMPTS_DIR, "character_system_prompt.txt")
+    )
+
+
 async def generate_character_response(
     user_message: str,
     chat: chats.AsyncChat,
@@ -133,15 +133,7 @@ async def generate_character_response(
     response = await chat.send_message(full_message)
 
     response_text = (response.text or "").strip()
-
-    try:
-        character_response = CharacterResponse.model_validate_json(response_text)
-    except Exception:
-        # Fallback if JSON parsing fails
-        character_response = CharacterResponse(
-            german_response=response_text.replace('"', "").replace("{", "").replace("}", ""),
-            is_conversation_complete=False,
-        )
+    character_response = CharacterResponse.model_validate_json(response_text)
 
     if settings.SHOW_FULL_AI_RESPONSE:
         rprint(

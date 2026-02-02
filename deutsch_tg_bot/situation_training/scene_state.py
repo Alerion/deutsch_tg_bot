@@ -30,6 +30,7 @@ class NarratorEvent(BaseModel):
     event_description_de: str = Field(
         description="German description of what happened (shown to user)"
     )
+    event_description_uk: str = Field(description="Ukrainian translation of the event description")
     event_context_for_npc: str = Field(
         description="English context for NPC about what changed and how to react"
     )
