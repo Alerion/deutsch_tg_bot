@@ -7,5 +7,5 @@ from deutsch_tg_bot.utils.handler_validation import ValidatedUpdate, check_handl
 
 @check_handler_acces
 async def stop_command(vu: ValidatedUpdate) -> int:
-    await vu.message.reply_text("До побачення! Щоб почати знову, введіть /start.")
+    await vu.reply_text("До побачення! Щоб почати знову, введіть /start.")
     return ConversationHandler.END

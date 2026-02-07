@@ -13,10 +13,22 @@ from deutsch_tg_bot.user_session import UserSession
 @dataclass
 class ValidatedUpdate:
     update: Update
-    message: Message
     message_text: str
     user: User
     session: UserSession
+    _message: Message
+
+    async def reply_text(
+        self,
+        text: str,
+        parse_mode: str | None = None,
+        reply_markup: object = None,
+    ) -> Message:
+        return await self._message.reply_text(
+            text,
+            parse_mode=parse_mode,
+            reply_markup=reply_markup,  # type: ignore[arg-type]
+        )
 
 
 type ValidatedHandler = Callable[[ValidatedUpdate], Coroutine[Any, Any, int]]
@@ -47,10 +59,10 @@ def check_handler_acces(handler_func: ValidatedHandler) -> RawHandler:
 
         validated_update = ValidatedUpdate(
             update=update,
-            message=update.message,
             message_text=update.message.text.strip(),
             user=update.effective_user,
             session=session,
+            _message=update.message,
         )
         response = await handler_func(validated_update)
         context.user_data["session"] = validated_update.session

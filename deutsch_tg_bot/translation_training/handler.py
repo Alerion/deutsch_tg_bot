@@ -52,7 +52,7 @@ async def new_exercise(vu: ValidatedUpdate) -> int:
         f"<b>{sentence_number}. Переклади речення:</b>\n{new_sentence.ukrainian_sentence}\n\n"
         f"<b>Час</b>: {new_sentence.tense.value}"
     )
-    await vu.message.reply_text(message, parse_mode="HTML")
+    await vu.reply_text(message, parse_mode="HTML")
 
     sentence_translation.new_sentence_generation_task = asyncio.create_task(
         _generate_new_sentence(vu.session.deutsch_level, sentence_translation)
@@ -116,7 +116,7 @@ async def check_translation(vu: ValidatedUpdate) -> int:
             "Якщо у тебе є ще питання, задай їх. Або введи /next для наступного речення."
         )
 
-    await vu.message.reply_text(message, parse_mode="HTML")
+    await vu.reply_text(message, parse_mode="HTML")
     return ANSWER_QUESTION
 
 
@@ -142,7 +142,7 @@ async def answer_questions(vu: ValidatedUpdate) -> int:
         f"{ai_reply}\n\nЯкщо у тебе є ще питання, задай їх. Або введи /next для наступного речення."
     )
 
-    await vu.message.reply_text(message, parse_mode="HTML")
+    await vu.reply_text(message, parse_mode="HTML")
     return ANSWER_QUESTION
 
 

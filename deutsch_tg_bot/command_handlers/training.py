@@ -36,7 +36,7 @@ TRAINING_TYPE_NAMES = {
 async def start_handler(vu: ValidatedUpdate) -> int:
     vu.session = UserSession()
 
-    await vu.message.reply_text(
+    await vu.reply_text(
         "Привіт! Я твій бот для вивчення німецької мови. Будь ласка, обери свій поточний рівень німецької:",
         reply_markup=get_deutsch_level_keyboard(),
     )
@@ -49,7 +49,7 @@ async def store_level(vu: ValidatedUpdate) -> int:
     try:
         deutsch_level = DeutschLevel(vu.message_text)
     except ValueError:
-        await vu.message.reply_text(
+        await vu.reply_text(
             "Обрано невірний рівень. Будь ласка, обери правильний рівень німецької з клавіатури.",
             reply_markup=get_deutsch_level_keyboard(),
         )
@@ -58,7 +58,7 @@ async def store_level(vu: ValidatedUpdate) -> int:
     vu.session = UserSession(deutsch_level=deutsch_level)
 
     # Ask for training type
-    await vu.message.reply_text(
+    await vu.reply_text(
         f"Чудово! Твій рівень німецької: <b>{deutsch_level.value}</b>\n\nОбери тип тренування:",
         reply_markup=get_training_type_keyboard(),
         parse_mode="HTML",
@@ -77,7 +77,7 @@ async def select_training_type(vu: ValidatedUpdate) -> int:
             break
 
     if selected_type is None:
-        await vu.message.reply_text(
+        await vu.reply_text(
             "Будь ласка, обери тип тренування з клавіатури:",
             reply_markup=get_training_type_keyboard(),
         )
@@ -99,13 +99,13 @@ async def select_training_type(vu: ValidatedUpdate) -> int:
 
     # Translation training - ask for sentence constraints
     if settings.DEV_SKIP_SENTENCE_CONSTRAINT:
-        await vu.message.reply_text(
+        await vu.reply_text(
             "Обрано переклад речень!\nВведи /next, щоб отримати перше завдання.",
             reply_markup=ReplyKeyboardRemove(),
         )
         return TRAINING_SESSION
 
-    await vu.message.reply_text(
+    await vu.reply_text(
         "Обрано переклад речень!\n\n"
         "Чи хочеш ти додати додаткові правила для генерації речень? "
         "(наприклад, 'Речення має містити слово immer')\n\n"
@@ -121,12 +121,12 @@ async def store_sentence_constraint(vu: ValidatedUpdate) -> int:
 
     if vu.message_text and vu.message_text != "/skip":
         vu.session.sentence_translation.sentence_constraint = vu.message_text
-        await vu.message.reply_text(
+        await vu.reply_text(
             f"Правила збережено: {vu.session.sentence_translation.sentence_constraint}\n"
             "Введи /next, щоб отримати перше завдання."
         )
     else:
-        await vu.message.reply_text("Введи /next, щоб отримати перше завдання.")
+        await vu.reply_text("Введи /next, щоб отримати перше завдання.")
 
     return TRAINING_SESSION
 

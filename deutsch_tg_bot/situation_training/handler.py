@@ -37,7 +37,7 @@ END = ConversationHandler.END
 async def start_situation_selection(vu: ValidatedUpdate) -> int:
     """Ask user to describe the situation they want to practice."""
 
-    await vu.message.reply_text(
+    await vu.reply_text(
         f"Твій рівень: <b>{vu.session.deutsch_level.value}</b>\n\n"
         "Опиши ситуацію, яку хочеш потренувати.\n\n"
         "<i>Наприклад:</i>\n"
@@ -82,7 +82,7 @@ async def handle_situation_description(vu: ValidatedUpdate) -> int:
             situation_chat=chat,
         )
 
-    await vu.message.reply_text(
+    await vu.reply_text(
         intro_message,
         reply_markup=ReplyKeyboardRemove(),
         parse_mode="HTML",
@@ -141,7 +141,7 @@ async def handle_roleplay_message(vu: ValidatedUpdate) -> int:
                 narrator_msg = f"📖 <i>{narrator_event.event_description_de}</i>"
                 if narrator_event.event_description_uk.strip():
                     narrator_msg += f"\n<code>({narrator_event.event_description_uk})</code>"
-                await vu.message.reply_text(narrator_msg, parse_mode="HTML")
+                await vu.reply_text(narrator_msg, parse_mode="HTML")
 
         # Generate character response with narrator context if available
         character_response, updated_chat = await generate_character_response(
@@ -167,7 +167,7 @@ async def handle_roleplay_message(vu: ValidatedUpdate) -> int:
         feedback_message = f"💡 {grammar_result.brief_feedback}"
         if grammar_result.corrected_text:
             feedback_message += f"\n✓ <i>{grammar_result.corrected_text}</i>"
-        await vu.message.reply_text(
+        await vu.reply_text(
             feedback_message,
             parse_mode="HTML",
         )
@@ -184,11 +184,11 @@ async def handle_roleplay_message(vu: ValidatedUpdate) -> int:
             f"Ви обмінялися <b>{situation_training.situation_message_count}</b> повідомленнями.\n\n"
             "Введіть /situation щоб обрати нову ситуацію, або /next для перекладу речень."
         )
-        await vu.message.reply_text(character_msg, parse_mode="HTML")
+        await vu.reply_text(character_msg, parse_mode="HTML")
         vu.session.situation_training = None
         return END
 
-    await vu.message.reply_text(character_msg, parse_mode="HTML")
+    await vu.reply_text(character_msg, parse_mode="HTML")
     return ROLEPLAY_CONVERSATION
 
 
@@ -197,7 +197,7 @@ async def end_situation(vu: ValidatedUpdate) -> int:
     """Handle /end command to finish current situation."""
     vu.session.situation_training = None
 
-    await vu.message.reply_text(
+    await vu.reply_text(
         "Ситуацію завершено.\n"
         "Введіть /situation щоб обрати нову ситуацію, або /next для перекладу речень.",
         parse_mode="HTML",

@@ -6,7 +6,7 @@ from deutsch_tg_bot.utils.handler_validation import ValidatedUpdate
 
 
 async def show_progress(vu: ValidatedUpdate, text: str) -> None:
-    progress_message = await vu.message.reply_text(f"_{text}_", parse_mode="Markdown")
+    progress_message = await vu.reply_text(f"_{text}_", parse_mode="Markdown")
     i = 0
     try:
         while True:
@@ -26,7 +26,7 @@ async def progress(vu: ValidatedUpdate, text: str) -> AsyncGenerator[None, None]
         yield
     except Exception as e:
         task.cancel()
-        await vu.message.reply_text(
+        await vu.reply_text(
             "Вибач, сталася помилка під час обробки твого запиту. Спробуй ще раз пізніше."
         )
         raise e
