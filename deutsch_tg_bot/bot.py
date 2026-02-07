@@ -19,29 +19,36 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from icecream import ic
 from rich import print as rprint
 
+from deutsch_tg_bot import situation_training
 from deutsch_tg_bot.command_handlers.training import select_training_type, training_handler
 from deutsch_tg_bot.config import settings
 from deutsch_tg_bot.deutsh_enums import DeutschLevel
 
 training_router = Router()
+situation_training_router = Router()
+translation_training_router = Router()
+training_router.include_router(situation_training_router)
+training_router.include_router(translation_training_router)
 
 
-class Training(StatesGroup):
+class Setup(StatesGroup):
     select_level = State()
     select_training_type = State()
 
-    # For situation training
+
+class SituationTraining(StatesGroup):
     describe_situation = State()
     situation_training_session = State()
 
-    # For translation training
+
+class TranslationTraining(StatesGroup):
     add_sentence_constraint = State()
     translation_training_session = State()
 
 
 @training_router.message(CommandStart())
 async def command_start(message: Message, state: FSMContext) -> None:
-    await state.set_state(Training.select_level)
+    await state.set_state(Setup.select_level)
     await message.answer(
         "Привіт! Я твій бот для вивчення німецької мови. Будь ласка, обери свій поточний рівень німецької:",
         reply_markup=ReplyKeyboardMarkup(
@@ -51,7 +58,7 @@ async def command_start(message: Message, state: FSMContext) -> None:
     )
 
 
-@training_router.message(Training.select_level)
+@training_router.message(Setup.select_level)
 async def store_deutsch_level(message: Message, state: FSMContext) -> None:
     try:
         deutsch_level = DeutschLevel(message.text)
@@ -62,7 +69,7 @@ async def store_deutsch_level(message: Message, state: FSMContext) -> None:
         return
 
     await state.update_data(deutsch_level=deutsch_level)
-    await state.set_state(Training.select_training_type)
+    await state.set_state(Setup.select_training_type)
 
     await message.answer(
         f"Чудово! Ти обрав рівень {deutsch_level.value}",
@@ -85,25 +92,25 @@ async def store_deutsch_level(message: Message, state: FSMContext) -> None:
 
 
 # Situation training handlers
-@training_router.message(Training.select_training_type)
-@training_router.callback_query(F.data == "situation")
+@situation_training_router.message(Setup.select_training_type)
+@situation_training_router.callback_query(F.data == "situation")
 async def select_training_type(callback_query: CallbackQuery, state: FSMContext) -> None:
     await callback_query.answer("Ти обрав тренування 'Рольова гра (ситуації)'")
-    await state.set_state(Training.describe_situation)
+    await state.set_state(SituationTraining.describe_situation)
     await callback_query.message.answer(
         "Опиши ситуацію, в якій ти хочеш потренуватися (наприклад, 'Уяви, що ти в кафе і хочеш замовити каву')",
         reply_markup=ReplyKeyboardRemove(),
     )
 
 
-@training_router.message(Training.describe_situation)
+@situation_training_router.message(SituationTraining.describe_situation)
 async def describe_situation(message: Message, state: FSMContext) -> None:
     await state.update_data(situation_description=message.text)
-    await state.set_state(Training.situation_training_session)
+    await state.set_state(SituationTraining.situation_training_session)
     await message.answer("Ти в темній комнаті. Твої дії?")
 
 
-@training_router.message(Training.situation_training_session)
+@situation_training_router.message(SituationTraining.situation_training_session)
 async def situation_training_session(message: Message, state: FSMContext) -> None:
     await message.answer(
         f"Твоя відповідь: {message.text}\n\n(Тут буде відповідь від AI на основі опису ситуації та твоєї відповіді)"
@@ -111,11 +118,11 @@ async def situation_training_session(message: Message, state: FSMContext) -> Non
 
 
 # Translation training handlers
-@training_router.message(Training.select_training_type)
-@training_router.callback_query(F.data == "translation")
+@translation_training_router.message(Setup.select_training_type)
+@translation_training_router.callback_query(F.data == "translation")
 async def select_training_type(callback_query: CallbackQuery, state: FSMContext) -> None:
     await callback_query.answer("Ти обрав тренування 'Переклад речень'")
-    await state.set_state(Training.add_sentence_constraint)
+    await state.set_state(TranslationTraining.add_sentence_constraint)
     await callback_query.message.answer(
         "Чи хочеш ти додати додаткові правила для генерації речень? "
         "(наприклад, 'Речення має містити слово immer')\n\n"
@@ -124,7 +131,7 @@ async def select_training_type(callback_query: CallbackQuery, state: FSMContext)
     )
 
 
-@training_router.message(Training.add_sentence_constraint)
+@translation_training_router.message(TranslationTraining.add_sentence_constraint)
 async def add_sentence_constraint(message: Message, state: FSMContext) -> None:
     if message.text and message.text != "/skip":
         await state.update_data(sentence_constraint=message.text)
