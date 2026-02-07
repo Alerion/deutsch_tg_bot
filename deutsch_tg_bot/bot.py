@@ -1,5 +1,3 @@
-from pydoc import describe
-
 from aiogram import Bot, Dispatcher, F, Router, html
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
@@ -23,12 +21,12 @@ from deutsch_tg_bot import situation_training
 from deutsch_tg_bot.command_handlers.training import select_training_type, training_handler
 from deutsch_tg_bot.config import settings
 from deutsch_tg_bot.deutsh_enums import DeutschLevel
+from deutsch_tg_bot.translation_training.tg_router import router
 
 training_router = Router()
 situation_training_router = Router()
-translation_training_router = Router()
 training_router.include_router(situation_training_router)
-training_router.include_router(translation_training_router)
+training_router.include_router(router)
 
 
 class Setup(StatesGroup):
@@ -39,11 +37,6 @@ class Setup(StatesGroup):
 class SituationTraining(StatesGroup):
     describe_situation = State()
     situation_training_session = State()
-
-
-class TranslationTraining(StatesGroup):
-    add_sentence_constraint = State()
-    translation_training_session = State()
 
 
 @training_router.message(CommandStart())
@@ -79,11 +72,11 @@ async def store_deutsch_level(message: Message, state: FSMContext) -> None:
     select_training_type_keyboard = InlineKeyboardBuilder()
     select_training_type_keyboard.button(
         text="Рольова гра (ситуації)",
-        callback_data="situation",
+        callback_data="select_training_type:situation",
     )
     select_training_type_keyboard.button(
         text="Переклад речень",
-        callback_data="translation",
+        callback_data="select_training_type:translation",
     )
     await message.answer(
         "Тепер обери тип тренування:",
@@ -92,8 +85,7 @@ async def store_deutsch_level(message: Message, state: FSMContext) -> None:
 
 
 # Situation training handlers
-@situation_training_router.message(Setup.select_training_type)
-@situation_training_router.callback_query(F.data == "situation")
+@situation_training_router.callback_query(F.data == "select_training_type:situation")
 async def select_training_type(callback_query: CallbackQuery, state: FSMContext) -> None:
     await callback_query.answer("Ти обрав тренування 'Рольова гра (ситуації)'")
     await state.set_state(SituationTraining.describe_situation)
@@ -117,32 +109,14 @@ async def situation_training_session(message: Message, state: FSMContext) -> Non
     )
 
 
-# Translation training handlers
-@translation_training_router.message(Setup.select_training_type)
-@translation_training_router.callback_query(F.data == "translation")
-async def select_training_type(callback_query: CallbackQuery, state: FSMContext) -> None:
-    await callback_query.answer("Ти обрав тренування 'Переклад речень'")
-    await state.set_state(TranslationTraining.add_sentence_constraint)
-    await callback_query.message.answer(
-        "Чи хочеш ти додати додаткові правила для генерації речень? "
-        "(наприклад, 'Речення має містити слово immer')\n\n"
-        "Якщо так, введи правила. Якщо ні, просто введи /skip.",
-        reply_markup=ReplyKeyboardRemove(),
-    )
-
-
-@translation_training_router.message(TranslationTraining.add_sentence_constraint)
-async def add_sentence_constraint(message: Message, state: FSMContext) -> None:
-    if message.text and message.text != "/skip":
-        await state.update_data(sentence_constraint=message.text)
-        await message.answer(f"Правила збережено: {message.text}")
-
-    await message.answer("1. Речення для перекладу")
-
-
 async def start_bot() -> None:
     ic(settings.USERNAME_WHITELIST)
-    tg_bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
+    tg_bot = Bot(
+        token=settings.TELEGRAM_BOT_TOKEN,
+        default=DefaultBotProperties(
+            parse_mode=ParseMode.HTML,
+        ),
+    )
     dispatcher = Dispatcher()
     dispatcher.include_router(training_router)
     await dispatcher.start_polling(tg_bot)
