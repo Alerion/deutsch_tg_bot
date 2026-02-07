@@ -1,9 +1,6 @@
-from typing import cast
-
-from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
+from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import (
     CommandHandler,
-    ContextTypes,
     ConversationHandler,
     MessageHandler,
     filters,
@@ -18,7 +15,7 @@ from deutsch_tg_bot.situation_training.handler import (
 )
 from deutsch_tg_bot.translation_training.handler import translation_training_handler
 from deutsch_tg_bot.user_session import SentenceTranslationState, TrainingType, UserSession
-from deutsch_tg_bot.utils.handler_validation import check_handler_acces
+from deutsch_tg_bot.utils.handler_validation import ValidatedUpdate, check_handler_acces
 from deutsch_tg_bot.utils.random_selector import BalancedRandomSelector
 
 STORE_LEVEL = 1
@@ -36,10 +33,10 @@ TRAINING_TYPE_NAMES = {
 
 
 @check_handler_acces
-async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    context.user_data["session"] = None
+async def start_handler(vu: ValidatedUpdate) -> int:
+    vu.session = UserSession()
 
-    await update.message.reply_text(
+    await vu.message.reply_text(
         "Привіт! Я твій бот для вивчення німецької мови. Будь ласка, обери свій поточний рівень німецької:",
         reply_markup=get_deutsch_level_keyboard(),
     )
@@ -47,24 +44,21 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     return STORE_LEVEL
 
 
-async def store_level(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    if update.message is None or update.message.text is None or context.user_data is None:
-        raise ValueError("Invalid update")
-
+@check_handler_acces
+async def store_level(vu: ValidatedUpdate) -> int:
     try:
-        deutsch_level = DeutschLevel(update.message.text)
+        deutsch_level = DeutschLevel(vu.message_text)
     except ValueError:
-        await update.message.reply_text(
+        await vu.message.reply_text(
             "Обрано невірний рівень. Будь ласка, обери правильний рівень німецької з клавіатури.",
             reply_markup=get_deutsch_level_keyboard(),
         )
         return STORE_LEVEL
 
-    user_session = UserSession(deutsch_level=deutsch_level)
-    context.user_data["session"] = user_session
+    vu.session = UserSession(deutsch_level=deutsch_level)
 
     # Ask for training type
-    await update.message.reply_text(
+    await vu.message.reply_text(
         f"Чудово! Твій рівень німецької: <b>{deutsch_level.value}</b>\n\nОбери тип тренування:",
         reply_markup=get_training_type_keyboard(),
         parse_mode="HTML",
@@ -73,35 +67,29 @@ async def store_level(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
     return SELECT_TRAINING_TYPE
 
 
-async def select_training_type(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    if update.message is None or update.message.text is None or context.user_data is None:
-        raise ValueError("Invalid update")
-
-    selected_text = update.message.text.strip()
-
+@check_handler_acces
+async def select_training_type(vu: ValidatedUpdate) -> int:
     # Find matching training type
     selected_type: TrainingType | None = None
     for training_type, name in TRAINING_TYPE_NAMES.items():
-        if name == selected_text:
+        if name == vu.message_text:
             selected_type = training_type
             break
 
     if selected_type is None:
-        await update.message.reply_text(
+        await vu.message.reply_text(
             "Будь ласка, обери тип тренування з клавіатури:",
             reply_markup=get_training_type_keyboard(),
         )
         return SELECT_TRAINING_TYPE
 
-    user_session = cast(UserSession, context.user_data["session"])
-
     if selected_type == TrainingType.SITUATION:
-        await start_situation_selection(update, context)
+        await start_situation_selection(vu)
         return TRAINING_SESSION
     elif selected_type == TrainingType.TRANSLATION:
-        user_session.sentence_translation = SentenceTranslationState(
+        vu.session.sentence_translation = SentenceTranslationState(
             random_tense_selector=BalancedRandomSelector(
-                items=DEUTCH_LEVEL_TENSES[user_session.deutsch_level],
+                items=DEUTCH_LEVEL_TENSES[vu.session.deutsch_level],
             ),
             random_sentence_type_selector=BalancedRandomSelector(
                 items=list(SentenceTypeProbabilities.keys()),
@@ -111,13 +99,13 @@ async def select_training_type(update: Update, context: ContextTypes.DEFAULT_TYP
 
     # Translation training - ask for sentence constraints
     if settings.DEV_SKIP_SENTENCE_CONSTRAINT:
-        await update.message.reply_text(
+        await vu.message.reply_text(
             "Обрано переклад речень!\nВведи /next, щоб отримати перше завдання.",
             reply_markup=ReplyKeyboardRemove(),
         )
         return TRAINING_SESSION
 
-    await update.message.reply_text(
+    await vu.message.reply_text(
         "Обрано переклад речень!\n\n"
         "Чи хочеш ти додати додаткові правила для генерації речень? "
         "(наприклад, 'Речення має містити слово immer')\n\n"
@@ -127,22 +115,18 @@ async def select_training_type(update: Update, context: ContextTypes.DEFAULT_TYP
     return STORE_SENTENCE_CONSTRAINT
 
 
-async def store_sentence_constraint(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    if update.message is None or update.message.text is None or context.user_data is None:
-        raise ValueError("Invalid update")
+@check_handler_acces
+async def store_sentence_constraint(vu: ValidatedUpdate) -> int:
+    assert vu.session.sentence_translation is not None
 
-    user_session = cast(UserSession, context.user_data["session"])
-    assert user_session.sentence_translation is not None
-    message_text = update.message.text.strip()
-
-    if message_text and message_text != "/skip":
-        user_session.sentence_translation.sentence_constraint = update.message.text.strip()
-        await update.message.reply_text(
-            f"Правила збережено: {user_session.sentence_translation.sentence_constraint}\n"
+    if vu.message_text and vu.message_text != "/skip":
+        vu.session.sentence_translation.sentence_constraint = vu.message_text
+        await vu.message.reply_text(
+            f"Правила збережено: {vu.session.sentence_translation.sentence_constraint}\n"
             "Введи /next, щоб отримати перше завдання."
         )
     else:
-        await update.message.reply_text("Введи /next, щоб отримати перше завдання.")
+        await vu.message.reply_text("Введи /next, щоб отримати перше завдання.")
 
     return TRAINING_SESSION
 

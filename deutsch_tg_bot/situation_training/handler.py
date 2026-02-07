@@ -1,12 +1,10 @@
 """ConversationHandler for situation simulation training."""
 
 import asyncio
-from typing import cast
 
-from telegram import ReplyKeyboardRemove, Update
+from telegram import ReplyKeyboardRemove
 from telegram.ext import (
     CommandHandler,
-    ContextTypes,
     ConversationHandler,
     MessageHandler,
     filters,
@@ -27,7 +25,8 @@ from deutsch_tg_bot.situation_training.ai.situation_generator import (
     generate_situation_from_description,
 )
 from deutsch_tg_bot.tg_progress import progress
-from deutsch_tg_bot.user_session import SituationTrainingState, UserSession
+from deutsch_tg_bot.user_session import SituationTrainingState
+from deutsch_tg_bot.utils.handler_validation import ValidatedUpdate, check_handler_acces
 
 # States for situation training
 SITUATION_DESCRIPTION_INPUT = 10
@@ -35,17 +34,11 @@ ROLEPLAY_CONVERSATION = 11
 END = ConversationHandler.END
 
 
-async def start_situation_selection(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def start_situation_selection(vu: ValidatedUpdate) -> int:
     """Ask user to describe the situation they want to practice."""
-    if update.message is None:
-        raise ValueError("Expected a message in update")
-    if context.user_data is None:
-        raise ValueError("Expected user_data in context")
 
-    user_session = cast(UserSession, context.user_data["session"])
-
-    await update.message.reply_text(
-        f"Твій рівень: <b>{user_session.deutsch_level.value}</b>\n\n"
+    await vu.message.reply_text(
+        f"Твій рівень: <b>{vu.session.deutsch_level.value}</b>\n\n"
         "Опиши ситуацію, яку хочеш потренувати.\n\n"
         "<i>Наприклад:</i>\n"
         "• Розмова з механіком про ремонт машини\n"
@@ -61,39 +54,35 @@ async def start_situation_selection(update: Update, context: ContextTypes.DEFAUL
     return SITUATION_DESCRIPTION_INPUT
 
 
-async def handle_situation_description(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+handle_situation_selection = check_handler_acces(start_situation_selection)
+
+
+@check_handler_acces
+async def handle_situation_description(vu: ValidatedUpdate) -> int:
     """Handle user's custom situation description and start the roleplay."""
-    if update.message is None or update.message.text is None:
-        raise ValueError("Expected a message in update")
-    if context.user_data is None:
-        raise ValueError("Expected user_data in context")
+    user_description = vu.message_text
+    deutsch_level = vu.session.deutsch_level
 
-    user_session = cast(UserSession, context.user_data["session"])
-
-    user_description = update.message.text.strip()
-
-    async with progress(update, "Створюю ситуацію"):
+    async with progress(vu, "Створюю ситуацію"):
         custom_situation = await generate_situation_from_description(
             user_description,
-            user_session.deutsch_level,
+            deutsch_level,
         )
 
         # Generate initial scene state and situation intro in parallel
         scene_state_task = asyncio.create_task(
-            generate_initial_scene_state(custom_situation, user_session.deutsch_level)
+            generate_initial_scene_state(custom_situation, deutsch_level)
         )
-        intro_task = asyncio.create_task(
-            generate_situation_intro(custom_situation, user_session.deutsch_level)
-        )
+        intro_task = asyncio.create_task(generate_situation_intro(custom_situation, deutsch_level))
 
         scene_state, (intro_message, chat) = await asyncio.gather(scene_state_task, intro_task)
-        user_session.situation_training = SituationTrainingState(
+        vu.session.situation_training = SituationTrainingState(
             current_situation=custom_situation,
             scene_state=scene_state,
             situation_chat=chat,
         )
 
-    await update.message.reply_text(
+    await vu.message.reply_text(
         intro_message,
         reply_markup=ReplyKeyboardRemove(),
         parse_mode="HTML",
@@ -102,22 +91,16 @@ async def handle_situation_description(update: Update, context: ContextTypes.DEF
     return ROLEPLAY_CONVERSATION
 
 
-async def handle_roleplay_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+@check_handler_acces
+async def handle_roleplay_message(vu: ValidatedUpdate) -> int:
     """Handle user's message in roleplay and respond + check grammar."""
-    if update.message is None or update.message.text is None:
-        raise ValueError("Expected a message in update")
-    if context.user_data is None:
-        raise ValueError("Expected user_data in context")
+    situation_training = vu.session.situation_training
+    assert situation_training is not None
 
-    user_session = cast(UserSession, context.user_data["session"])
-    assert user_session.situation_training is not None
-    situation_training = user_session.situation_training
-
-    user_message = update.message.text.strip()
     situation_training.situation_message_count += 1
 
     # Track dialogue for narrator
-    situation_training.recent_dialogue.append(("User", user_message))
+    situation_training.recent_dialogue.append(("User", vu.message_text))
 
     # Check if narrator should trigger
     narrator_context: str | None = None
@@ -129,18 +112,18 @@ async def handle_roleplay_message(update: Update, context: ContextTypes.DEFAULT_
     # Run grammar check in parallel with other operations
     grammar_task = asyncio.create_task(
         check_grammar_with_ai(
-            user_message,
-            user_session.deutsch_level,
+            vu.message_text,
+            vu.session.deutsch_level,
             f"{situation_training.current_situation.name_de} - {situation_training.current_situation.character_role}",
         )
     )
 
-    async with progress(update, "Обробляю відповідь"):
+    async with progress(vu, "Обробляю відповідь"):
         # If narrator triggers, generate event first
         if trigger_narrator:
             narrator_event = await generate_narrator_event(
                 situation_training.current_situation,
-                user_session.deutsch_level,
+                vu.session.deutsch_level,
                 situation_training.scene_state,
                 situation_training.recent_dialogue[-6:],  # Last 6 messages
             )
@@ -158,14 +141,14 @@ async def handle_roleplay_message(update: Update, context: ContextTypes.DEFAULT_
                 narrator_msg = f"📖 <i>{narrator_event.event_description_de}</i>"
                 if narrator_event.event_description_uk.strip():
                     narrator_msg += f"\n<code>({narrator_event.event_description_uk})</code>"
-                await update.message.reply_text(narrator_msg, parse_mode="HTML")
+                await vu.message.reply_text(narrator_msg, parse_mode="HTML")
 
         # Generate character response with narrator context if available
         character_response, updated_chat = await generate_character_response(
-            user_message,
+            vu.message_text,
             situation_training.situation_chat,
             situation_training.current_situation,
-            user_session.deutsch_level,
+            vu.session.deutsch_level,
             scene_state=situation_training.scene_state,
             narrator_context=narrator_context,
         )
@@ -184,7 +167,7 @@ async def handle_roleplay_message(update: Update, context: ContextTypes.DEFAULT_
         feedback_message = f"💡 {grammar_result.brief_feedback}"
         if grammar_result.corrected_text:
             feedback_message += f"\n✓ <i>{grammar_result.corrected_text}</i>"
-        await update.message.reply_text(
+        await vu.message.reply_text(
             feedback_message,
             parse_mode="HTML",
         )
@@ -201,25 +184,20 @@ async def handle_roleplay_message(update: Update, context: ContextTypes.DEFAULT_
             f"Ви обмінялися <b>{situation_training.situation_message_count}</b> повідомленнями.\n\n"
             "Введіть /situation щоб обрати нову ситуацію, або /next для перекладу речень."
         )
-        await update.message.reply_text(character_msg, parse_mode="HTML")
-        user_session.situation_training = None
+        await vu.message.reply_text(character_msg, parse_mode="HTML")
+        vu.session.situation_training = None
         return END
 
-    await update.message.reply_text(character_msg, parse_mode="HTML")
+    await vu.message.reply_text(character_msg, parse_mode="HTML")
     return ROLEPLAY_CONVERSATION
 
 
-async def end_situation(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+@check_handler_acces
+async def end_situation(vu: ValidatedUpdate) -> int:
     """Handle /end command to finish current situation."""
-    if update.message is None:
-        raise ValueError("Expected a message in update")
-    if context.user_data is None:
-        raise ValueError("Expected user_data in context")
+    vu.session.situation_training = None
 
-    user_session = cast(UserSession, context.user_data["session"])
-    user_session.situation_training = None
-
-    await update.message.reply_text(
+    await vu.message.reply_text(
         "Ситуацію завершено.\n"
         "Введіть /situation щоб обрати нову ситуацію, або /next для перекладу речень.",
         parse_mode="HTML",
@@ -231,7 +209,7 @@ async def end_situation(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
 # Nested ConversationHandler for situation training
 situation_training_handler = ConversationHandler(
     entry_points=[
-        CommandHandler("situation", start_situation_selection),
+        CommandHandler("situation", handle_situation_selection),
         # Allow direct entry via text (for situation description input)
         MessageHandler(filters.TEXT & ~filters.COMMAND, handle_situation_description),
     ],

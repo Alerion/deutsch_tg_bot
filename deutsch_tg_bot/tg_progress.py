@@ -2,14 +2,11 @@ import asyncio
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from telegram import Update
+from deutsch_tg_bot.utils.handler_validation import ValidatedUpdate
 
 
-async def show_progress(update: Update, text: str) -> None:
-    if update.message is None:
-        return
-
-    progress_message = await update.message.reply_text(f"_{text}_", parse_mode="Markdown")
+async def show_progress(vu: ValidatedUpdate, text: str) -> None:
+    progress_message = await vu.message.reply_text(f"_{text}_", parse_mode="Markdown")
     i = 0
     try:
         while True:
@@ -23,16 +20,15 @@ async def show_progress(update: Update, text: str) -> None:
 
 
 @asynccontextmanager
-async def progress(update: Update, text: str) -> AsyncGenerator[None, None]:
-    task = asyncio.create_task(show_progress(update, text))
+async def progress(vu: ValidatedUpdate, text: str) -> AsyncGenerator[None, None]:
+    task = asyncio.create_task(show_progress(vu, text))
     try:
         yield
     except Exception as e:
         task.cancel()
-        if update.message is not None:
-            await update.message.reply_text(
-                "Вибач, сталася помилка під час обробки твого запиту. Спробуй ще раз пізніше."
-            )
+        await vu.message.reply_text(
+            "Вибач, сталася помилка під час обробки твого запиту. Спробуй ще раз пізніше."
+        )
         raise e
     finally:
         task.cancel()

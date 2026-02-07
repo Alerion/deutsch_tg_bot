@@ -47,7 +47,7 @@ class SituationTrainingState:
 
 @dataclass
 class UserSession:
-    deutsch_level: DeutschLevel
+    deutsch_level: DeutschLevel = DeutschLevel.A1
 
     sentence_translation: SentenceTranslationState | None = None
     situation_training: SituationTrainingState | None = None
