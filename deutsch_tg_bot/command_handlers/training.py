@@ -13,7 +13,6 @@ from deutsch_tg_bot.situation_training.handler import (
     situation_training_handler,
     start_situation_selection,
 )
-from deutsch_tg_bot.translation_training.handler import translation_training_handler
 from deutsch_tg_bot.user_session import SentenceTranslationState, TrainingType, UserSession
 from deutsch_tg_bot.utils.handler_validation import ValidatedUpdate, check_handler_acces
 from deutsch_tg_bot.utils.random_selector import BalancedRandomSelector
@@ -143,7 +142,6 @@ training_handler = ConversationHandler(
             MessageHandler(filters.TEXT & ~filters.COMMAND, store_sentence_constraint),
         ],
         TRAINING_SESSION: [
-            translation_training_handler,
             situation_training_handler,
         ],
     },

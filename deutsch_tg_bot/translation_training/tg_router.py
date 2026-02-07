@@ -46,9 +46,9 @@ router = Router()
 # @translation_training_router.message(Setup.select_training_type)
 @router.callback_query(F.data == "select_training_type:translation")
 async def select_training_type(callback_query: CallbackQuery, state: FSMContext) -> None:
-    deutsch_level = await state.get_value("deutsch_level")
-    await callback_query.answer("Ти обрав тренування 'Переклад речень'")
+    await callback_query.message.edit_text("Ти обрав тренування 'Переклад речень'")
 
+    deutsch_level = await state.get_value("deutsch_level")
     sentence_translation = SentenceTranslationState(
         random_tense_selector=BalancedRandomSelector(
             items=DEUTCH_LEVEL_TENSES[deutsch_level],

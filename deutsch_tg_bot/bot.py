@@ -42,21 +42,29 @@ class SituationTraining(StatesGroup):
 @training_router.message(CommandStart())
 async def command_start(message: Message, state: FSMContext) -> None:
     await state.set_state(Setup.select_level)
+
+    select_deutsch_level_keyboard = InlineKeyboardBuilder()
+    for level in settings.DEUTSCH_LEVELS:
+        select_deutsch_level_keyboard.button(
+            text=level.name,
+            callback_data=f"select_deutsch_level:{level.value}",
+        )
+
+    await message.answer("Привіт! Я твій бот для вивчення німецької мови.")
     await message.answer(
-        "Привіт! Я твій бот для вивчення німецької мови. Будь ласка, обери свій поточний рівень німецької:",
-        reply_markup=ReplyKeyboardMarkup(
-            keyboard=[[KeyboardButton(text=level.value) for level in settings.DEUTSCH_LEVELS]],
-            resize_keyboard=True,
-        ),
+        "Будь ласка, обери свій поточний рівень німецької:",
+        reply_markup=select_deutsch_level_keyboard.as_markup(),
     )
 
 
-@training_router.message(Setup.select_level)
-async def store_deutsch_level(message: Message, state: FSMContext) -> None:
+@situation_training_router.callback_query(
+    Setup.select_level, F.data.startswith("select_deutsch_level:")
+)
+async def store_deutsch_level(callback_query: CallbackQuery, state: FSMContext) -> None:
     try:
-        deutsch_level = DeutschLevel(message.text)
+        deutsch_level = DeutschLevel(callback_query.data.split(":")[1])
     except ValueError:
-        await message.answer(
+        await callback_query.answer(
             "Обрано невірний рівень. Будь ласка, обери правильний рівень німецької з клавіатури."
         )
         return
@@ -64,9 +72,8 @@ async def store_deutsch_level(message: Message, state: FSMContext) -> None:
     await state.update_data(deutsch_level=deutsch_level)
     await state.set_state(Setup.select_training_type)
 
-    await message.answer(
+    await callback_query.message.edit_text(
         f"Чудово! Ти обрав рівень {deutsch_level.value}",
-        reply_markup=ReplyKeyboardRemove(),
     )
 
     select_training_type_keyboard = InlineKeyboardBuilder()
@@ -78,7 +85,7 @@ async def store_deutsch_level(message: Message, state: FSMContext) -> None:
         text="Переклад речень",
         callback_data="select_training_type:translation",
     )
-    await message.answer(
+    await callback_query.message.answer(
         "Тепер обери тип тренування:",
         reply_markup=select_training_type_keyboard.as_markup(),
     )
@@ -87,9 +94,9 @@ async def store_deutsch_level(message: Message, state: FSMContext) -> None:
 # Situation training handlers
 @situation_training_router.callback_query(F.data == "select_training_type:situation")
 async def select_training_type(callback_query: CallbackQuery, state: FSMContext) -> None:
-    await callback_query.answer("Ти обрав тренування 'Рольова гра (ситуації)'")
+    await callback_query.message.edit_text("Ти обрав тренування 'Рольова гра (ситуації)'")
     await state.set_state(SituationTraining.describe_situation)
-    await callback_query.message.answer(
+    await callback_query.answer(
         "Опиши ситуацію, в якій ти хочеш потренуватися (наприклад, 'Уяви, що ти в кафе і хочеш замовити каву')",
         reply_markup=ReplyKeyboardRemove(),
     )
