@@ -8,6 +8,8 @@ class Settings(BaseSettings):
         case_sensitive=True,
     )
 
+    USERNAME_WHITELIST: list[str] = []
+
     TELEGRAM_BOT_TOKEN: str = ""
     GOOGLE_API_KEY: str = ""
 

@@ -18,6 +18,7 @@ from deutsch_tg_bot.situation_training.handler import (
 )
 from deutsch_tg_bot.translation_training.handler import translation_training_handler
 from deutsch_tg_bot.user_session import SentenceTranslationState, TrainingType, UserSession
+from deutsch_tg_bot.utils.handler_validation import check_handler_acces
 from deutsch_tg_bot.utils.random_selector import BalancedRandomSelector
 
 STORE_LEVEL = 1
@@ -34,12 +35,8 @@ TRAINING_TYPE_NAMES = {
 }
 
 
+@check_handler_acces
 async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    # TODO: Validate username and allow access only for whitelisted users
-    # print(update.effective_user.username)
-    if update.message is None or update.message.text is None or context.user_data is None:
-        raise ValueError("Invalid update")
-
     context.user_data["session"] = None
 
     await update.message.reply_text(
