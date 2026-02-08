@@ -40,8 +40,6 @@ class TranslationTraining(StatesGroup):
 
 router = Router()
 
-# TODO: Add /next command handler
-
 
 # @translation_training_router.message(Setup.select_training_type)
 @router.callback_query(F.data == "select_training_type:translation")
