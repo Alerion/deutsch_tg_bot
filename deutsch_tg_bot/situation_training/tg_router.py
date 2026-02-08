@@ -1,24 +1,14 @@
 import asyncio
-from tabnanny import check
 
-from aiogram import Bot, Dispatcher, F, Router, html
-from aiogram.filters import Command
+from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import (
     CallbackQuery,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    KeyboardButton,
     Message,
-    ReplyKeyboardMarkup,
-    ReplyKeyboardRemove,
 )
-from rich import print as rprint
 
-from deutsch_tg_bot.config import settings
-from deutsch_tg_bot.data_types import Sentence
-from deutsch_tg_bot.deutsh_enums import DEUTCH_LEVEL_TENSES, DeutschLevel, SentenceTypeProbabilities
+from deutsch_tg_bot.deutsh_enums import DeutschLevel
 from deutsch_tg_bot.situation_training.ai.grammar_checker import check_grammar_with_ai
 from deutsch_tg_bot.situation_training.ai.narrator_agent import (
     generate_initial_scene_state,
@@ -34,17 +24,7 @@ from deutsch_tg_bot.situation_training.ai.situation_generator import (
 )
 from deutsch_tg_bot.situation_training.situations import Situation
 from deutsch_tg_bot.tg_progress import progress
-from deutsch_tg_bot.translation_training.ai.question_answering import answer_question_with_ai
-from deutsch_tg_bot.translation_training.ai.sentence_generator import (
-    generate_sentence_with_ai,
-    get_sentence_generator_params,
-)
-from deutsch_tg_bot.translation_training.ai.translation_evaluation import (
-    TranslationEvaluationResult,
-    evaluate_translation_with_ai,
-)
-from deutsch_tg_bot.user_session import SentenceTranslationState, SituationTrainingState
-from deutsch_tg_bot.utils.random_selector import BalancedRandomSelector
+from deutsch_tg_bot.user_session import SituationTrainingState
 
 
 class SituationTraining(StatesGroup):
@@ -57,6 +37,7 @@ router = Router()
 
 @router.callback_query(F.data == "select_training_type:situation")
 async def select_training_type(callback_query: CallbackQuery, state: FSMContext) -> None:
+    assert isinstance(callback_query.message, Message)
     await callback_query.message.edit_text("Ти обрав тренування 'Рольова гра (ситуації)'")
     await callback_query.message.answer(
         "Опиши ситуацію, в якій ти хочеш потренуватися (наприклад, 'Уяви, що ти в кафе і хочеш замовити каву')",
@@ -66,9 +47,11 @@ async def select_training_type(callback_query: CallbackQuery, state: FSMContext)
 
 @router.message(SituationTraining.describe_situation)
 async def describe_situation(message: Message, state: FSMContext) -> None:
-    deutsch_level: DeutschLevel = await state.get_value("deutsch_level")
+    deutsch_level = await state.get_value("deutsch_level")
+    assert isinstance(deutsch_level, DeutschLevel)
 
     async with progress(message, "Створюю ситуацію"):
+        assert message.text is not None
         situation: Situation = await generate_situation_from_description(
             message.text, deutsch_level
         )
@@ -93,13 +76,15 @@ async def describe_situation(message: Message, state: FSMContext) -> None:
 @router.message(SituationTraining.process_user_message)
 async def process_user_message(message: Message, state: FSMContext) -> None:
     """Handle user's message in roleplay and respond + check grammar."""
-    deutsch_level: DeutschLevel = await state.get_value("deutsch_level")
+    deutsch_level = await state.get_value("deutsch_level")
+    assert isinstance(deutsch_level, DeutschLevel)
     situation_training = await state.get_value("situation_training")
-    assert situation_training is not None
+    assert isinstance(situation_training, SituationTrainingState)
 
     situation_training.situation_message_count += 1
 
     # Track dialogue for narrator
+    assert message.text is not None
     situation_training.recent_dialogue.append(("User", message.text))
 
     # Check if narrator should trigger

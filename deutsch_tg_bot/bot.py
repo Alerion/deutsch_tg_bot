@@ -1,17 +1,12 @@
-from aiogram import Bot, Dispatcher, F, Router, html
+from aiogram import Bot, Dispatcher, F, Router
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.filters import Command, CommandStart
+from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import (
     CallbackQuery,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    KeyboardButton,
     Message,
-    ReplyKeyboardMarkup,
-    ReplyKeyboardRemove,
 )
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from icecream import ic
@@ -53,6 +48,7 @@ async def command_start(message: Message, state: FSMContext) -> None:
     Setup.select_level, F.data.startswith("select_deutsch_level:")
 )
 async def store_deutsch_level(callback_query: CallbackQuery, state: FSMContext) -> None:
+    assert callback_query.data is not None
     try:
         deutsch_level = DeutschLevel(callback_query.data.split(":")[1])
     except ValueError:
@@ -64,6 +60,7 @@ async def store_deutsch_level(callback_query: CallbackQuery, state: FSMContext) 
     await state.update_data(deutsch_level=deutsch_level)
     await state.set_state(Setup.select_training_type)
 
+    assert isinstance(callback_query.message, Message)
     await callback_query.message.edit_text(
         f"Чудово! Ти обрав рівень {deutsch_level.value}",
     )

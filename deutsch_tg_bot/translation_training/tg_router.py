@@ -1,21 +1,14 @@
 import asyncio
-from tabnanny import check
 
-from aiogram import Bot, Dispatcher, F, Router, html
+from aiogram import F, Router, html
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import (
     CallbackQuery,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    KeyboardButton,
     Message,
-    ReplyKeyboardMarkup,
-    ReplyKeyboardRemove,
 )
 
-from deutsch_tg_bot.config import settings
 from deutsch_tg_bot.data_types import Sentence
 from deutsch_tg_bot.deutsh_enums import DEUTCH_LEVEL_TENSES, DeutschLevel, SentenceTypeProbabilities
 from deutsch_tg_bot.tg_progress import progress
@@ -44,9 +37,11 @@ router = Router()
 # @translation_training_router.message(Setup.select_training_type)
 @router.callback_query(F.data == "select_training_type:translation")
 async def select_training_type(callback_query: CallbackQuery, state: FSMContext) -> None:
+    assert isinstance(callback_query.message, Message)
     await callback_query.message.edit_text("Ти обрав тренування 'Переклад речень'")
 
     deutsch_level = await state.get_value("deutsch_level")
+    assert isinstance(deutsch_level, DeutschLevel)
     sentence_translation = SentenceTranslationState(
         random_tense_selector=BalancedRandomSelector(
             items=DEUTCH_LEVEL_TENSES[deutsch_level],
@@ -69,8 +64,8 @@ async def select_training_type(callback_query: CallbackQuery, state: FSMContext)
 @router.message(TranslationTraining.add_sentence_constraint)
 @router.message(TranslationTraining.answer_question, Command("next"))
 async def generate_new_sentence_to_translate(message: Message, state: FSMContext) -> None:
-    sentence_translation: SentenceTranslationState = await state.get_value("sentence_translation")
-    assert sentence_translation is not None
+    sentence_translation = await state.get_value("sentence_translation")
+    assert isinstance(sentence_translation, SentenceTranslationState)
 
     # First sentence. Store sentence_constraint
     current_state = await state.get_state()
@@ -78,7 +73,8 @@ async def generate_new_sentence_to_translate(message: Message, state: FSMContext
         if message.text and message.text != "/skip":
             sentence_translation.sentence_constraint = message.text
 
-    deutsch_level: DeutschLevel = await state.get_value("deutsch_level")
+    deutsch_level = await state.get_value("deutsch_level")
+    assert isinstance(deutsch_level, DeutschLevel)
     if sentence_translation.new_sentence_generation_task is None:
         sentence_translation.new_sentence_generation_task = asyncio.create_task(
             _generate_new_sentence(deutsch_level, sentence_translation)
@@ -106,12 +102,13 @@ async def generate_new_sentence_to_translate(message: Message, state: FSMContext
 
 @router.message(TranslationTraining.check_translation)
 async def check_translation(message: Message, state: FSMContext) -> None:
-    sentence_translation: SentenceTranslationState = await state.get_value("sentence_translation")
-    assert sentence_translation is not None
+    sentence_translation = await state.get_value("sentence_translation")
+    assert isinstance(sentence_translation, SentenceTranslationState)
 
     current_sentence = sentence_translation.sentences_history[-1]
 
     async with progress(message, "Перевіряю переклад"):
+        assert message.text is not None
         check_result = await evaluate_translation_with_ai(current_sentence, message.text)
 
     sentence_translation.last_translation_check_result = check_result
@@ -150,8 +147,8 @@ async def check_translation(message: Message, state: FSMContext) -> None:
 
 @router.message(TranslationTraining.answer_question)
 async def answer_question(message: Message, state: FSMContext) -> None:
-    sentence_translation: SentenceTranslationState = await state.get_value("sentence_translation")
-    assert sentence_translation is not None
+    sentence_translation = await state.get_value("sentence_translation")
+    assert isinstance(sentence_translation, SentenceTranslationState)
 
     if sentence_translation.last_translation_check_result is None:
         raise ValueError("Expected last_translation_check_result to be initialized")
@@ -159,6 +156,7 @@ async def answer_question(message: Message, state: FSMContext) -> None:
     current_sentence = sentence_translation.sentences_history[-1]
 
     async with progress(message, "Думаю над відповідю"):
+        assert message.text is not None
         ai_reply, sentence_translation.genai_chat = await answer_question_with_ai(
             message.text,
             current_sentence,
@@ -166,7 +164,10 @@ async def answer_question(message: Message, state: FSMContext) -> None:
             sentence_translation.genai_chat,
         )
 
-    answer_message = f"{html.code(ai_reply)}\n\nЯкщо у тебе є ще питання, задай їх. Або введи /next для наступного речення."
+    answer_message = (
+        f"{html.code(ai_reply)}"
+        "\n\nЯкщо у тебе є ще питання, задай їх. Або введи /next для наступного речення."
+    )
     await message.answer(answer_message)
     await state.update_data(sentence_translation=sentence_translation)
 
