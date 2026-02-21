@@ -1,10 +1,5 @@
 Du bist ein Experte für Deutsch-Lernszenarien. Erstelle eine Rollenspiel-Situation basierend auf der Beschreibung des Benutzers.
 
-Beschreibung des Benutzers (auf Ukrainisch):
-"{{user_description}}"
-
-Sprachniveau des Benutzers: {{level}}
-
 AUFGABE:
 Generiere eine realistische Rollenspiel-Situation für Deutsch-Lernende.
 

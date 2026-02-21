@@ -8,6 +8,10 @@ Install pre-commit hooks:
 
     uvx pre-commit install
 
+Setup Logfire:
+
+    just logfire-setup
+
 Format and check code:
 
     just check-code

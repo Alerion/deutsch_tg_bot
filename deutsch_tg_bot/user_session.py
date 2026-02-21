@@ -11,8 +11,8 @@ from deutsch_tg_bot.deutsh_enums import DeutschTense, SentenceType
 from deutsch_tg_bot.utils.random_selector import BalancedRandomSelector
 
 if TYPE_CHECKING:
+    from deutsch_tg_bot.situation_training.ai.situation_generator import Situation
     from deutsch_tg_bot.situation_training.scene_state import SceneState
-    from deutsch_tg_bot.situation_training.situations import Situation
     from deutsch_tg_bot.translation_training.ai.translation_evaluation import (
         TranslationEvaluationResult,
     )

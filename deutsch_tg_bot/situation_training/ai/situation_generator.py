@@ -1,36 +1,27 @@
 """AI module for generating custom situations from user descriptions."""
 
 import os
-from functools import cache
 
-from google import genai
 from pydantic import BaseModel, Field
-from rich import print as rprint
-from rich.panel import Panel
-from rich.pretty import Pretty
+from pydantic_ai import Agent, RunContext
 
-from deutsch_tg_bot.config import settings
 from deutsch_tg_bot.deutsh_enums import DeutschLevel
-from deutsch_tg_bot.situation_training.situations import Situation
 from deutsch_tg_bot.utils.prompt_utils import (
     load_prompt_template_from_file,
-    replace_promt_placeholder,
 )
 
-genai_client = genai.Client(api_key=settings.GOOGLE_API_KEY).aio
-
 GOOGLE_MODEL = "gemini-2.5-flash"
-
 PROMPTS_DIR = os.path.join(os.path.dirname(__file__), "prompts")
 
 
-class GeneratedSituation(BaseModel):
+class Situation(BaseModel):
     """AI-generated situation from user description."""
 
     name_uk: str = Field(description="Short Ukrainian name for the situation (2-4 words)")
     name_de: str = Field(description="German name for the situation")
     character_role: str = Field(description="The NPC's role in German (e.g., Verkäufer, Arzt)")
     user_role_uk: str = Field(description="Description of user's role in Ukrainian (1 sentence)")
+    user_role_de: str = Field(description="Description of user's role in German (1 sentence)")
     scenario_prompt: str = Field(
         description="Detailed scenario prompt in German for the AI character (5-10 sentences)"
     )
@@ -42,60 +33,36 @@ class GeneratedSituation(BaseModel):
     )
 
 
-@cache
-def get_situation_generator_prompt_template() -> str:
-    return replace_promt_placeholder(
-        load_prompt_template_from_file(PROMPTS_DIR, "generate_situation.txt")
-    )
+class UserContext(BaseModel):
+    user_description: str = Field(description="User's description of the desired situation")
+    deutsch_level: DeutschLevel = Field(description="User's German proficiency level")
+
+
+agent = Agent(
+    model=GOOGLE_MODEL,
+    output_type=Situation,
+    deps_type=UserContext,
+    instructions=load_prompt_template_from_file(PROMPTS_DIR, "generate_situation.txt"),
+)
+
+
+@agent.instructions
+async def add_context(ctx: RunContext[UserContext]) -> str:
+    return f"""
+    Beschreibung des Benutzers (auf Ukrainisch):
+    {ctx.deps.user_description!r}
+
+    Sprachniveau des Benutzers: {ctx.deps.deutsch_level}
+    """
 
 
 async def generate_situation_from_description(
     user_description: str,
     level: DeutschLevel,
 ) -> Situation:
-    prompt_template = get_situation_generator_prompt_template()
-    prompt = prompt_template % {
-        "user_description": user_description,
-        "level": level.value,
-    }
-
-    response = await genai_client.models.generate_content(
-        model=GOOGLE_MODEL,
-        config=genai.types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_json_schema=GeneratedSituation.model_json_schema(),
-            temperature=0.7,
-        ),
-        contents=prompt,
+    deps = UserContext(
+        user_description=user_description,
+        deutsch_level=level,
     )
-
-    response_text = (response.text or "").strip()
-    generated = GeneratedSituation.model_validate_json(response_text)
-    situation = Situation(
-        name_uk=generated.name_uk,
-        name_de=generated.name_de,
-        character_role=generated.character_role,
-        user_role_uk=generated.user_role_uk,
-        min_level=level,
-        scenario_prompt=generated.scenario_prompt,
-        opening_message_de=generated.opening_message_de,
-        opening_message_uk=generated.opening_message_uk,
-    )
-
-    if settings.SHOW_FULL_AI_RESPONSE:
-        rprint(
-            Panel(
-                Pretty(
-                    {
-                        "user_description": user_description,
-                        "level": level.value,
-                        "generated": generated.model_dump(),
-                    },
-                    expand_all=True,
-                ),
-                title="Generated Situation",
-                border_style="green",
-            )
-        )
-
-    return situation
+    response = await agent.run("Situation erzeugen", deps=deps)
+    return response.output

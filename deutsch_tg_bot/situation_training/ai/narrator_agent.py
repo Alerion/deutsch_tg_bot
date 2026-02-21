@@ -11,8 +11,8 @@ from rich.pretty import Pretty
 
 from deutsch_tg_bot.config import settings
 from deutsch_tg_bot.deutsh_enums import DeutschLevel
+from deutsch_tg_bot.situation_training.ai.situation_generator import Situation
 from deutsch_tg_bot.situation_training.scene_state import NarratorEvent, SceneState
-from deutsch_tg_bot.situation_training.situations import Situation
 from deutsch_tg_bot.utils.prompt_utils import (
     load_prompt_template_from_file,
     replace_promt_placeholder,

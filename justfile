@@ -11,3 +11,7 @@ start:
 
 count_tokens:
     uv run python -m main count_tokens
+
+logfire-setup:
+    uv run logfire --region=eu auth
+    uv run logfire projects use deutsch-tg-bot

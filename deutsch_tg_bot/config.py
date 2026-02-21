@@ -1,3 +1,5 @@
+import logfire
+from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from deutsch_tg_bot.deutsh_enums import DeutschLevel
@@ -14,6 +16,7 @@ class Settings(BaseSettings):
 
     TELEGRAM_BOT_TOKEN: str = ""
     GOOGLE_API_KEY: str = ""
+    LOGFIRE_TOKEN: str | None = None
 
     PREVIOUS_SENTENCES_NUMBER: int = 5
     SHOW_TOCKENS_USAGE: bool = False
@@ -29,3 +32,9 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+load_dotenv()
+
+logfire.configure(
+    token=settings.LOGFIRE_TOKEN,
+)
+logfire.instrument_pydantic_ai()

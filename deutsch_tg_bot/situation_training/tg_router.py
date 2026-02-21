@@ -20,9 +20,9 @@ from deutsch_tg_bot.situation_training.ai.situation_agent import (
     generate_situation_intro,
 )
 from deutsch_tg_bot.situation_training.ai.situation_generator import (
+    Situation,
     generate_situation_from_description,
 )
-from deutsch_tg_bot.situation_training.situations import Situation
 from deutsch_tg_bot.tg_progress import progress
 from deutsch_tg_bot.user_session import SituationTrainingState
 
