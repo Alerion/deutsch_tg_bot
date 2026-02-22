@@ -31,7 +31,11 @@ extend-exclude = []
 # Add the `line-too-long` rule to the enforced rule set. By default, Ruff omits rules that
 # overlap with the use of a formatter, like Black, but we can override this behavior by
 # explicitly adding the rule.
-extend-select = ["E501", "RUF100", "I", "F401"]
+extend-select = [
+    "E",   # Style errors (indentation, whitespace, line too long)
+    "F",   # Logic errors (unused imports, undefined variables)
+    "I",   # Import sorting
+]
 
 [tool.ruff.lint.pycodestyle]
 max-line-length = 120
