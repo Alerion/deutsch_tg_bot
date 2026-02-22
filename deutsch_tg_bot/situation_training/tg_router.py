@@ -1,5 +1,3 @@
-import asyncio
-
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -9,18 +7,10 @@ from aiogram.types import (
 )
 
 from deutsch_tg_bot.deutsh_enums import DeutschLevel
-from deutsch_tg_bot.situation_training.ai.grammar_checker import check_grammar_with_ai
-from deutsch_tg_bot.situation_training.ai.narrator_agent import (
-    generate_initial_scene_state,
-    generate_narrator_event,
-    should_trigger_narrator,
-)
-from deutsch_tg_bot.situation_training.ai.situation_agent import (
-    generate_character_response,
-    generate_situation_intro,
-)
+from deutsch_tg_bot.situation_training.ai.data_types import NPCResponse
+from deutsch_tg_bot.situation_training.ai.narrator_agent import get_narrator_response
+from deutsch_tg_bot.situation_training.ai.npc_agent import get_npc_reaction
 from deutsch_tg_bot.situation_training.ai.situation_generator import (
-    Situation,
     generate_situation_from_description,
 )
 from deutsch_tg_bot.tg_progress import progress
@@ -47,30 +37,67 @@ async def select_training_type(callback_query: CallbackQuery, state: FSMContext)
 
 @router.message(SituationTraining.describe_situation)
 async def describe_situation(message: Message, state: FSMContext) -> None:
-    deutsch_level = await state.get_value("deutsch_level")
-    assert isinstance(deutsch_level, DeutschLevel)
-
     async with progress(message, "Створюю ситуацію"):
         assert message.text is not None
-        situation: Situation = await generate_situation_from_description(
-            message.text, deutsch_level
+        if message.text.strip() == "1":
+            description = """
+Я Нео на самому початку фільму Матриця.
+Я ще нічого не знаю про Матрицю, живу звичайним життям в місті, працюю програмістом.
+Я відчуваю, що щось не так з світом, але не можу зрозуміти що саме.
+Я відчуваю себе в пастці, як ніби я не на своєму місці.
+Я часто відчуваю тривогу і розгубленість через це.
+Я не знаю, що таке Матриця і що вона означає для мене.
+Пізній вечір, я в своїй квартирі, сиджу за комп'ютером і працюю над кодом.
+Тут в двері дзвонять. За дверима стоїть Морфеус.
+"""
+        else:
+            description = message.text
+
+        game_state, npc_states, player_state = await generate_situation_from_description(
+            user_description=description,
+            game_language_code="uk",
         )
 
-        # Generate initial scene state and situation intro in parallel
-        scene_state_task = asyncio.create_task(
-            generate_initial_scene_state(situation, deutsch_level)
-        )
-        intro_task = asyncio.create_task(generate_situation_intro(situation, deutsch_level))
-        scene_state, (intro_message, chat) = await asyncio.gather(scene_state_task, intro_task)
-
-    situation_training = SituationTrainingState(
-        current_situation=situation,
-        scene_state=scene_state,
-        situation_chat=chat,
+    situation_training_state = SituationTrainingState(
+        game_state=game_state,
+        npc_states=npc_states,
+        player_state=player_state,
     )
-    await message.answer(intro_message)
+
+    # First reasction of narrator based on initial situation description
+    latest_player_action = """
+Гравець входить в ситуацію. Ще не зробив жодної дії.
+Обовʼязково потрібна якась реакція чи дія, щоб тригернути динаміку в ситуації.
+Інакше, гравець може просто не знати, що робити далі.
+"""
+    async with progress(message, "Наратор думає..."):
+        narrator_response = await get_narrator_response(
+            situation_training_state=situation_training_state,
+            latest_player_action=latest_player_action,
+        )
+
+    situation_training_state.messages_history.append(
+        {"sender": "narrator", "text": narrator_response.narrator_action}
+    )
+    narrator_msg = f"📖 <i>{narrator_response.narrator_action}</i>"
+    await message.answer(narrator_msg)
+
+    for npc_id in game_state.active_npcs:
+        async with progress(message, f"{npc_id} думає..."):
+            npc_response = await get_npc_reaction(
+                npc_id=npc_id,
+                situation_training_state=situation_training_state,
+                latest_player_action=latest_player_action,
+            )
+        apply_npc_response_to_state(situation_training_state, npc_response)
+        situation_training_state.messages_history.append(
+            {"sender": npc_id, "text": npc_response.action_or_speech}
+        )
+        npc_msg = f"<b>{npc_response.npc_id}:</b>\n{npc_response.action_or_speech}"
+        await message.answer(npc_msg)
+
     await state.set_state(SituationTraining.process_user_message)
-    await state.update_data(situation_training=situation_training)
+    await state.update_data(situation_training_state=situation_training_state)
 
 
 @router.message(SituationTraining.process_user_message)
@@ -78,97 +105,75 @@ async def process_user_message(message: Message, state: FSMContext) -> None:
     """Handle user's message in roleplay and respond + check grammar."""
     deutsch_level = await state.get_value("deutsch_level")
     assert isinstance(deutsch_level, DeutschLevel)
-    situation_training = await state.get_value("situation_training")
-    assert isinstance(situation_training, SituationTrainingState)
+    situation_training_state = await state.get_value("situation_training_state")
+    assert isinstance(situation_training_state, SituationTrainingState)
 
-    situation_training.situation_message_count += 1
+    situation_training_state.player_message_count += 1
 
-    # Track dialogue for narrator
     assert message.text is not None
-    situation_training.recent_dialogue.append(("User", message.text))
+    latest_player_action = message.text
 
-    # Check if narrator should trigger
-    narrator_context: str | None = None
-    trigger_narrator = should_trigger_narrator(
-        situation_training.situation_message_count,
-        situation_training.last_narrator_event_index,
-    )
-
-    # Run grammar check in parallel with other operations
-    grammar_task = asyncio.create_task(
-        check_grammar_with_ai(
-            message.text,
-            deutsch_level,
-            f"{situation_training.current_situation.name_de} - {situation_training.current_situation.character_role}",
-        )
-    )
-
-    async with progress(message, "Обробляю відповідь"):
-        # If narrator triggers, generate event first
-        if trigger_narrator:
-            narrator_event = await generate_narrator_event(
-                situation_training.current_situation,
-                deutsch_level,
-                situation_training.scene_state,
-                situation_training.recent_dialogue[-6:],  # Last 6 messages
+    # FIXME: Sometime user message should trigger narrator response.
+    #        For example, if user makes some action and is exepcting some reaction from the world.
+    if should_trigger_narrator(situation_training_state):
+        async with progress(message, "Наратор думає..."):
+            narrator_response = await get_narrator_response(
+                situation_training_state=situation_training_state,
+                latest_player_action=latest_player_action,
             )
 
-            # Update state
-            situation_training.scene_state = narrator_event.updated_state
-            situation_training.last_narrator_event_index = (
-                situation_training.situation_message_count
+        situation_training_state.messages_history.append(
+            {"sender": "narrator", "text": narrator_response.narrator_action}
+        )
+        narrator_msg = f"📖 <i>{narrator_response.narrator_action}</i>"
+        await message.answer(narrator_msg)
+
+    for npc_id in situation_training_state.game_state.active_npcs:
+        async with progress(message, f"{npc_id} думає..."):
+            npc_response = await get_npc_reaction(
+                npc_id=npc_id,
+                situation_training_state=situation_training_state,
+                latest_player_action=latest_player_action,
             )
-            situation_training.recent_dialogue = []  # Reset dialogue tracking
-            narrator_context = narrator_event.event_context_for_npc
-
-            # Send narrator event to user if there's a description
-            if narrator_event.event_description_de.strip():
-                narrator_msg = f"📖 <i>{narrator_event.event_description_de}</i>"
-                if narrator_event.event_description_uk.strip():
-                    narrator_msg += f"\n<code>({narrator_event.event_description_uk})</code>"
-                await message.answer(narrator_msg)
-
-        # Generate character response with narrator context if available
-        character_response, updated_chat = await generate_character_response(
-            message.text,
-            situation_training.situation_chat,
-            situation_training.current_situation,
-            deutsch_level,
-            scene_state=situation_training.scene_state,
-            narrator_context=narrator_context,
+        apply_npc_response_to_state(situation_training_state, npc_response)
+        situation_training_state.messages_history.append(
+            {"sender": npc_id, "text": npc_response.action_or_speech}
         )
+        npc_msg = f"<b>{npc_response.npc_id}:</b>\n{npc_response.action_or_speech}"
+        await message.answer(npc_msg)
 
-        grammar_result = await grammar_task
-
-    situation_training.situation_chat = updated_chat
-
-    # Track NPC response in dialogue
-    situation_training.recent_dialogue.append(
-        (situation_training.current_situation.character_role, character_response.german_response)
+    situation_training_state.messages_history.append(
+        {"sender": "player", "text": latest_player_action}
     )
 
-    # Send grammar feedback first (as reply to user's message) if there are errors
-    if grammar_result.has_errors and grammar_result.brief_feedback:
-        feedback_message = f"💡 {grammar_result.brief_feedback}"
-        if grammar_result.corrected_text:
-            feedback_message += f"\n✓ <i>{grammar_result.corrected_text}</i>"
-        await message.answer(feedback_message)
+    await state.update_data(situation_training_state=situation_training_state)
 
-    # Send character's response
-    character_msg = (
-        f"<b>{situation_training.current_situation.character_role}:</b>\n"
-        f"{character_response.german_response}"
-    )
 
-    if character_response.is_conversation_complete:
-        character_msg += (
-            "\n\n<i>--- Розмова завершена ---</i>\n\n"
-            f"Ви обмінялися <b>{situation_training.situation_message_count}</b> повідомленнями.\n\n"
-            "Введіть /situation щоб обрати нову ситуацію, або /next для перекладу речень."
+def should_trigger_narrator(
+    situation_training_state: SituationTrainingState,
+    trigger_after_player_messages: int = 3,
+) -> bool:
+    trigger_narrator = (
+        situation_training_state.player_message_count
+        - situation_training_state.last_narrator_event_index
+    ) >= trigger_after_player_messages
+    if trigger_narrator:
+        situation_training_state.last_narrator_event_index = (
+            situation_training_state.player_message_count
         )
-        await message.answer(character_msg)
-        await state.update_data(situation_training=None)
-        return
+    return trigger_narrator
 
-    await message.answer(character_msg)
-    await state.update_data(situation_training=situation_training)
+
+def apply_npc_response_to_state(
+    situation_training_state: SituationTrainingState, npc_response: NPCResponse
+) -> None:
+    npc = next(
+        (npc for npc in situation_training_state.npc_states if npc.npc_id == npc_response.npc_id),
+        None,
+    )
+    assert npc is not None, f"NPC with id {npc_response.npc_id} not found in the current game state"
+
+    if npc_response.mood_update:
+        npc.mood = npc_response.mood_update
+    if npc_response.learns_about_player:
+        npc.knows_about_player.extend(npc_response.learns_about_player)
